@@ -1,0 +1,124 @@
+====================================================================================================
+FIXED-OPERATOR-COUNT COMPARISON
+====================================================================================================
+molecule      : LiH(AS:2e,3o)  (6 qubits, stretched 3.0 A)
+fixed_k       : 6 operators, both ADAPT stopping criteria disabled
+lambda_init   : 1.0
+opt_maxiter   : 100  (COBYLA per ADAPT step)
+noise scales  : (0.0, 0.05, 0.1, 0.2)  x FakeManilaV2 median gate errors
+FCI(active)   : -7.72709302 Ha
+====================================================================================================
+
+----------------------------------------------------------------------------------------------------
+NOISE noiseless  (scale=0, p1=0.000e+00, p2=0.000e+00)
+----------------------------------------------------------------------------------------------------
+  standard         err=   0.022 mHa   CNOT=30   depth=43   ops=6  lam_f=None  462s
+      seq: D:XXYX@0123[cx=6] S:YZX@012[cx=4] D:XXYX@0145[cx=6] D:YXYY@0145[cx=6] S:YZX@123[cx=4] S:XZY@012[cx=4]
+      delta vs standard: +0.000 mHa (equal)
+  resource-aware   err=   0.022 mHa   CNOT=30   depth=43   ops=6  lam_f=1.0  471s
+      seq: D:XXYX@0123[cx=6] S:YZX@012[cx=4] D:XXYX@0145[cx=6] D:YXYY@0145[cx=6] S:YZX@123[cx=4] S:XZY@012[cx=4]
+      delta vs standard: +0.000 mHa (equal)
+  noise-realized   err=   0.033 mHa   CNOT=32   depth=46   ops=6  lam_f=1.0  622s
+      seq: D:YYXY@0123[cx=6] S:XZY@012[cx=4] D:XXXY@0145[cx=6] D:YXXX@0145[cx=6] S:YZX@123[cx=4] D:XXYX@0123[cx=6]
+      delta vs standard: +0.011 mHa (worse)
+  NR+adaptive-lam  err=   0.033 mHa   CNOT=32   depth=46   ops=6  lam_f=2.0318964714127525  209s
+      seq: D:YYXY@0123[cx=6] S:XZY@012[cx=4] D:XXXY@0145[cx=6] D:YXXX@0145[cx=6] S:YZX@123[cx=4] D:XXYX@0123[cx=6]
+      delta vs standard: +0.011 mHa (worse)
+
+----------------------------------------------------------------------------------------------------
+NOISE ManilaV2x0.05  (scale=0.05, p1=1.769e-05, p2=5.045e-04)
+----------------------------------------------------------------------------------------------------
+  standard         err=   3.946 mHa   CNOT=32   depth=46   ops=6  lam_f=None  142s
+      seq: D:YYYX@0123[cx=6] S:YZX@123[cx=4] D:YYXY@0145[cx=6] D:YXXX@0145[cx=6] S:YZX@012[cx=4] D:YXXX@0123[cx=6]
+      delta vs standard: +0.000 mHa (equal)
+  resource-aware   err=   3.946 mHa   CNOT=32   depth=46   ops=6  lam_f=1.0  142s
+      seq: D:YYYX@0123[cx=6] S:YZX@123[cx=4] D:YYXY@0145[cx=6] D:YXXX@0145[cx=6] S:YZX@012[cx=4] D:YXXX@0123[cx=6]
+      delta vs standard: +0.000 mHa (equal)
+  noise-realized   err=   3.980 mHa   CNOT=32   depth=46   ops=6  lam_f=1.0  662s
+      seq: D:YXYY@0123[cx=6] S:XZY@123[cx=4] D:YXXX@0145[cx=6] D:YYXY@0145[cx=6] S:YZX@012[cx=4] D:YYXY@0123[cx=6]
+      delta vs standard: +0.034 mHa (worse)
+  NR+adaptive-lam  err=   3.980 mHa   CNOT=32   depth=46   ops=6  lam_f=8.0  344s
+      seq: D:YXYY@0123[cx=6] S:XZY@123[cx=4] D:YXXX@0145[cx=6] D:YYXY@0145[cx=6] S:YZX@012[cx=4] D:YYXY@0123[cx=6]
+      delta vs standard: +0.034 mHa (worse)
+
+----------------------------------------------------------------------------------------------------
+NOISE ManilaV2x0.1  (scale=0.1, p1=3.539e-05, p2=1.009e-03)
+----------------------------------------------------------------------------------------------------
+  standard         err=   7.788 mHa   CNOT=32   depth=46   ops=6  lam_f=None  139s
+      seq: D:YYYX@0123[cx=6] S:YZX@123[cx=4] D:YYXY@0145[cx=6] D:YXXX@0145[cx=6] S:YZX@012[cx=4] D:YXXX@0123[cx=6]
+      delta vs standard: +0.000 mHa (equal)
+  resource-aware   err=   7.788 mHa   CNOT=32   depth=46   ops=6  lam_f=1.0  137s
+      seq: D:YYYX@0123[cx=6] S:YZX@123[cx=4] D:YYXY@0145[cx=6] D:YXXX@0145[cx=6] S:YZX@012[cx=4] D:YXXX@0123[cx=6]
+      delta vs standard: +0.000 mHa (equal)
+  noise-realized   err=   7.554 mHa   CNOT=32   depth=46   ops=6  lam_f=1.0  353s
+      seq: D:YXYY@0123[cx=6] S:XZY@123[cx=4] D:YXXX@0145[cx=6] D:YYXY@0145[cx=6] S:YZX@012[cx=4] D:YXXX@0123[cx=6]
+      delta vs standard: -0.235 mHa (better)
+  NR+adaptive-lam  err=   7.554 mHa   CNOT=32   depth=46   ops=6  lam_f=8.0  352s
+      seq: D:YXYY@0123[cx=6] S:XZY@123[cx=4] D:YXXX@0145[cx=6] D:YYXY@0145[cx=6] S:YZX@012[cx=4] D:YXXX@0123[cx=6]
+      delta vs standard: -0.235 mHa (better)
+
+----------------------------------------------------------------------------------------------------
+NOISE ManilaV2x0.2  (scale=0.2, p1=7.077e-05, p2=2.018e-03)
+----------------------------------------------------------------------------------------------------
+  standard         err=  15.302 mHa   CNOT=32   depth=46   ops=6  lam_f=None  146s
+      seq: D:YYYX@0123[cx=6] S:YZX@123[cx=4] D:YYXY@0145[cx=6] D:YXXX@0145[cx=6] D:YXXX@0123[cx=6] S:YZX@012[cx=4]
+      delta vs standard: +0.000 mHa (equal)
+  resource-aware   err=  15.302 mHa   CNOT=32   depth=46   ops=6  lam_f=1.0  146s
+      seq: D:YYYX@0123[cx=6] S:YZX@123[cx=4] D:YYXY@0145[cx=6] D:YXXX@0145[cx=6] D:YXXX@0123[cx=6] S:YZX@012[cx=4]
+      delta vs standard: +0.000 mHa (equal)
+  noise-realized   err=  16.190 mHa   CNOT=34   depth=48   ops=6  lam_f=1.0  351s
+      seq: D:YXYY@0123[cx=6] S:XZY@123[cx=4] D:YXXX@0145[cx=6] D:YYXY@0145[cx=6] D:YYXY@0123[cx=6] D:YXXX@0123[cx=6]
+      delta vs standard: +0.888 mHa (worse)
+  NR+adaptive-lam  err=  16.190 mHa   CNOT=34   depth=48   ops=6  lam_f=8.0  353s
+      seq: D:YXYY@0123[cx=6] S:XZY@123[cx=4] D:YXXX@0145[cx=6] D:YYXY@0145[cx=6] D:YYXY@0123[cx=6] D:YXXX@0123[cx=6]
+      delta vs standard: +0.888 mHa (worse)
+
+====================================================================================================
+SUMMARY  --  energy error vs active-space FCI (mHa), fixed_k = 6
+====================================================================================================
+noise               standard    resource-aware    noise-realized   NR+adaptive-lam
+noiseless              0.022             0.022             0.033             0.033
+ManilaV2x0.05             3.946             3.946             3.980             3.980
+ManilaV2x0.1             7.788             7.788             7.554             7.554
+ManilaV2x0.2            15.302            15.302            16.190            16.190
+
+SUMMARY  --  delta vs standard (mHa); negative = novel rule more accurate at matched k
+noise               standard    resource-aware    noise-realized   NR+adaptive-lam
+noiseless             +0.000            +0.000            +0.011            +0.011
+ManilaV2x0.05            +0.000            +0.000            +0.034            +0.034
+ManilaV2x0.1            +0.000            +0.000            -0.235            -0.235
+ManilaV2x0.2            +0.000            +0.000            +0.888            +0.888
+
+SUMMARY  --  CNOT count
+noise               standard    resource-aware    noise-realized   NR+adaptive-lam
+noiseless                 30                30                32                32
+ManilaV2x0.05                32                32                32                32
+ManilaV2x0.1                32                32                32                32
+ManilaV2x0.2                32                32                34                34
+
+SUMMARY  --  operator sequence per rule per noise scale
+  [noiseless]
+    standard         D:XXYX@0123[cx=6] S:YZX@012[cx=4] D:XXYX@0145[cx=6] D:YXYY@0145[cx=6] S:YZX@123[cx=4] S:XZY@012[cx=4]
+    resource-aware   D:XXYX@0123[cx=6] S:YZX@012[cx=4] D:XXYX@0145[cx=6] D:YXYY@0145[cx=6] S:YZX@123[cx=4] S:XZY@012[cx=4]
+    noise-realized   D:YYXY@0123[cx=6] S:XZY@012[cx=4] D:XXXY@0145[cx=6] D:YXXX@0145[cx=6] S:YZX@123[cx=4] D:XXYX@0123[cx=6]
+    NR+adaptive-lam  D:YYXY@0123[cx=6] S:XZY@012[cx=4] D:XXXY@0145[cx=6] D:YXXX@0145[cx=6] S:YZX@123[cx=4] D:XXYX@0123[cx=6]
+  [ManilaV2x0.05]
+    standard         D:YYYX@0123[cx=6] S:YZX@123[cx=4] D:YYXY@0145[cx=6] D:YXXX@0145[cx=6] S:YZX@012[cx=4] D:YXXX@0123[cx=6]
+    resource-aware   D:YYYX@0123[cx=6] S:YZX@123[cx=4] D:YYXY@0145[cx=6] D:YXXX@0145[cx=6] S:YZX@012[cx=4] D:YXXX@0123[cx=6]
+    noise-realized   D:YXYY@0123[cx=6] S:XZY@123[cx=4] D:YXXX@0145[cx=6] D:YYXY@0145[cx=6] S:YZX@012[cx=4] D:YYXY@0123[cx=6]
+    NR+adaptive-lam  D:YXYY@0123[cx=6] S:XZY@123[cx=4] D:YXXX@0145[cx=6] D:YYXY@0145[cx=6] S:YZX@012[cx=4] D:YYXY@0123[cx=6]
+  [ManilaV2x0.1]
+    standard         D:YYYX@0123[cx=6] S:YZX@123[cx=4] D:YYXY@0145[cx=6] D:YXXX@0145[cx=6] S:YZX@012[cx=4] D:YXXX@0123[cx=6]
+    resource-aware   D:YYYX@0123[cx=6] S:YZX@123[cx=4] D:YYXY@0145[cx=6] D:YXXX@0145[cx=6] S:YZX@012[cx=4] D:YXXX@0123[cx=6]
+    noise-realized   D:YXYY@0123[cx=6] S:XZY@123[cx=4] D:YXXX@0145[cx=6] D:YYXY@0145[cx=6] S:YZX@012[cx=4] D:YXXX@0123[cx=6]
+    NR+adaptive-lam  D:YXYY@0123[cx=6] S:XZY@123[cx=4] D:YXXX@0145[cx=6] D:YYXY@0145[cx=6] S:YZX@012[cx=4] D:YXXX@0123[cx=6]
+  [ManilaV2x0.2]
+    standard         D:YYYX@0123[cx=6] S:YZX@123[cx=4] D:YYXY@0145[cx=6] D:YXXX@0145[cx=6] D:YXXX@0123[cx=6] S:YZX@012[cx=4]
+    resource-aware   D:YYYX@0123[cx=6] S:YZX@123[cx=4] D:YYXY@0145[cx=6] D:YXXX@0145[cx=6] D:YXXX@0123[cx=6] S:YZX@012[cx=4]
+    noise-realized   D:YXYY@0123[cx=6] S:XZY@123[cx=4] D:YXXX@0145[cx=6] D:YYXY@0145[cx=6] D:YYXY@0123[cx=6] D:YXXX@0123[cx=6]
+    NR+adaptive-lam  D:YXYY@0123[cx=6] S:XZY@123[cx=4] D:YXXX@0145[cx=6] D:YYXY@0145[cx=6] D:YYXY@0123[cx=6] D:YXXX@0123[cx=6]
+
+====================================================================================================
+Rules diverge in operator choice at matched k -- see the delta table above for the size of the effect.
+wrote -> results\results_fixed_k.csv
+====================================================================================================

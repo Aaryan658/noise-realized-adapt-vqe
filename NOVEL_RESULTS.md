@@ -143,6 +143,74 @@ candidate's optimisation is kept, so no work is thrown away.
   would add variance to the realised-`dE` score and could erode the small
   margin -- this should be checked.
 
+---
+
+## Fixed operator count (matched-k control)
+
+The 0.5-1.4 mHa advantage above is confounded: the energy-plateau stop
+terminates each rule at a different operator count, so part of the gap could be
+"noise-realized built a different-length circuit" rather than "noise-realized
+picked a better operator". To separate the two, `_adapt_loop` gained a
+`fixed_k` parameter -- both stopping criteria disabled, exactly `k` operators
+built, the top-scored candidate accepted at every step whether or not it lowers
+the energy. `fixed_k_experiment.py` runs all four rules at `k = 6` on
+LiH(2e,3o) (stretched 3.0 A), `lam_init = 1`, `opt_maxiter = 100`,
+`n_candidates = 4`, noise scales `{0, 0.05x, 0.1x, 0.2x}` FakeManilaV2. Data:
+`results/results_fixed_k.csv`.
+
+**Energy error vs active-space FCI (mHa), k = 6 forced:**
+
+| noise | standard | resource-aware | noise-realized | NR+adaptive-lam | delta (NR - std) | CNOT std / NR |
+|---|---|---|---|---|---|---|
+| 0.00  | 0.022  | 0.022  | 0.033  | 0.033  | **+0.011** | 30 / 32 |
+| 0.05x | 3.946  | 3.946  | 3.980  | 3.980  | **+0.034** | 32 / 32 |
+| 0.10x | 7.788  | 7.788  | 7.554  | 7.554  | **-0.235** | 32 / 32 |
+| 0.20x | 15.302 | 15.302 | 16.190 | 16.190 | **+0.888** | 32 / 34 |
+
+### Findings
+
+1. **The guardrail did not trip.** At matched k the rules *do* choose
+   different operators -- `noise_realized` selects a genuinely different
+   Pauli-string sequence from `standard` at every noise scale (e.g. 0.1x:
+   standard opens `D:YYYX@0123 S:YZX@123`, noise-realized opens
+   `D:YXYY@0123 S:XZY@123`). `resource_aware` is byte-identical to `standard`
+   everywhere, as always. So k=6 on LiH(2e,3o) *can* separate the rules by
+   operator choice -- it just does not separate them by accuracy.
+
+2. **At matched k, `noise_realized` does not consistently beat `standard`.**
+   One scale better (0.1x, -0.24 mHa), three scales worse (+0.01, +0.03,
+   +0.89 mHa), none by more than ~0.9 mHa. The sign is inconsistent and the
+   magnitude is at or below the noise floor of the comparison.
+
+3. **The margin does not widen at mild noise.** The earlier -0.46 / -0.90 mHa
+   at 0.25x / 0.50x were measured at k = 1-2 (the plateau stop truncated the
+   ansatz there). Forced out to k = 6 at *milder* noise, the one favourable
+   point (0.1x) is *smaller* (-0.24 mHa), and 0.05x is a slight loss. The
+   "deep ansatz + mild noise" regime does not help noise-realized here.
+
+4. **Conclusion: the previously reported advantage is largely a
+   circuit-length effect, not a better-choice-at-equal-cost effect.** In the
+   free-running sweep `noise_realized`'s realised-`dE` score stopped it at a
+   leaner circuit (26 vs 36 CNOT noiseless) and the plateau stop cut
+   `standard` short under noise; the accuracy gap rode on that length
+   difference. When every rule is pinned to the same k and the same ~32-CNOT
+   budget, the pure operator-choice contribution of noise-realized on
+   LiH(2e,3o) is ~0 and not reliably signed. This does not refute the rule --
+   it means **LiH(2e,3o) is too small to demonstrate it**, the same
+   conclusion the free-running data reached from the other direction. A
+   10-qubit active space (below) remains the test that could settle it.
+
+5. **`adaptive_lambda` again reproduces fixed-`lambda` exactly** at every
+   scale. `lambda_final` climbs to the 8.0 ceiling at 0.05x and 0.2x (six
+   forced operators, most not helping -> controller pushes the cost penalty
+   up), but with no cheaper gradient-competitive operator in the minimal-basis
+   pool the argmax never moves. Same structural limitation documented above.
+
+6. **Forcing operators past convergence costs accuracy under noise**, as
+   expected: standard at k=6 noiseless is 0.022 mHa (vs 0.006-0.010 mHa when
+   the plateau stop is allowed to roll back the last non-improving picks).
+   The fixed-k circuits are a control, not a recommended configuration.
+
 ## A fair test
 
 LiH(2e,5o), 10 qubits, noise scales `{0, 0.05, 0.1, 0.2}`, `max_operators = 16`,

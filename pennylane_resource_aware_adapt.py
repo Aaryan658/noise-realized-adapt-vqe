@@ -465,6 +465,7 @@ def _adapt_loop(spec, noise, selection: str, lam: float = DEFAULT_LAMBDA,
                 grad_method: str = DEFAULT_GRAD_METHOD,
                 n_candidates: int = DEFAULT_N_CANDIDATES,
                 adaptive_lambda: bool = False,
+                fixed_k: int | None = None,
                 verbose: bool = False) -> dict:
     """
     Shared ADAPT driver. `selection` in {'standard', 'resource_aware',
@@ -490,11 +491,24 @@ def _adapt_loop(spec, noise, selection: str, lam: float = DEFAULT_LAMBDA,
         seen so far by at least `energy_tol`; the loop then rolls back to that
         best state. The second one is what actually terminates the loop under
         noise, where the gradient estimate never gets small.
+
+    `fixed_k` (int, default None): matched-circuit-length mode. When set, BOTH
+    stopping criteria are disabled and the loop builds EXACTLY `fixed_k`
+    operators, appending the top-scored candidate at every step whether or not
+    it lowers the energy. This isolates "better operator *choice* at the same k"
+    from "different ansatz length": every rule is forced to the same operator
+    count, so a remaining energy-error gap is purely the selection rule picking
+    a better operator. The returned `energy`/`operators` then describe the full
+    k-operator circuit, not the best sub-circuit seen along the way.
     """
     if selection not in _SELECTIONS:
         raise ValueError(f"unknown selection rule: {selection}")
     if adaptive_lambda and selection != "noise_realized":
         raise ValueError("adaptive_lambda is only defined for noise_realized")
+    fixed = fixed_k is not None
+    if fixed and int(fixed_k) < 1:
+        raise ValueError("fixed_k must be a positive integer when set")
+    n_iters = int(fixed_k) if fixed else max_operators
 
     _, n_qubits, _, _ = mol.pennylane_hamiltonian(spec)
     e_fci = mol.fci_energy(spec)
@@ -523,11 +537,11 @@ def _adapt_loop(spec, noise, selection: str, lam: float = DEFAULT_LAMBDA,
         op_p, e_p, _ = _optimize(qn, x0, opt_maxiter)
         return list(op_p), float(e_p)
 
-    for it in range(max_operators):
+    for it in range(n_iters):
         grads = _candidate_gradients(spec, noise, best["selected"],
                                      best["params"], pool, method=grad_method)
         grad_norm = float(np.linalg.norm(grads))
-        if grad_norm < grad_tol:
+        if not fixed and grad_norm < grad_tol:
             converged = True
             break
 
@@ -539,8 +553,10 @@ def _adapt_loop(spec, noise, selection: str, lam: float = DEFAULT_LAMBDA,
             pick = int(np.argmax(scores))
             opt_params, trial_energy = _optimise_trial(pick)
         else:  # noise_realized
+            # In fixed_k mode the grad_tol screen is dropped so a step can never
+            # run out of candidates -- exactly k operators must be produced.
             shortlist = [int(i) for i in np.argsort(grads)[::-1]
-                         if i not in banned and grads[i] > grad_tol]
+                         if i not in banned and (fixed or grads[i] > grad_tol)]
             shortlist = shortlist[:max(1, n_candidates)]
             if not shortlist:
                 converged = True
@@ -560,13 +576,19 @@ def _adapt_loop(spec, noise, selection: str, lam: float = DEFAULT_LAMBDA,
 
         d_e = best["energy"] - trial_energy
         improved = d_e >= energy_tol
+        # fixed_k mode: accept every pick unconditionally to reach exactly k.
+        accept = improved or fixed
         if verbose:
+            if fixed:
+                tag = "keep" if improved else "force"
+            else:
+                tag = "keep" if improved else f"stale {len(banned) + 1}/{patience}"
             print(f"    it{it + 1:>2} +{pool[pick].label:<18} "
                   f"cx={pool[pick].cnot_cost:<3} |g|={grad_norm:.2e} "
                   f"lam={lam_cur:.2f} E={trial_energy:+.8f}  dE={d_e:+.2e}"
-                  f"  {'keep' if improved else f'stale {len(banned) + 1}/{patience}'}")
+                  f"  {tag}")
 
-        if improved:
+        if accept:
             best = {"energy": trial_energy, "selected": best["selected"] + [pool[pick]],
                     "params": list(opt_params),
                     "labels": best["labels"]
