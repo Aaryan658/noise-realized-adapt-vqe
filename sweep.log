@@ -1,0 +1,106 @@
+========================================================================================================
+VALIDATION 1/2 -- molecular references
+========================================================================================================
+------------------------------------------------------------------------------
+STEP 1  dhf integrals vs published full-space FCI (STO-3G)
+------------------------------------------------------------------------------
+molecule         qubits           E_dhf           E_lit    err/mHa  status
+H2                    4     -1.13730604     -1.13727000     0.0360  PASS
+LiH                  12     -7.88240342     -7.88236200     0.0414  PASS
+
+------------------------------------------------------------------------------
+STEP 2  Qiskit <-> PennyLane Hamiltonian bridge (must be exact)
+------------------------------------------------------------------------------
+molecule         qubits     E_pennylane        E_qiskit    diff/Ha  status
+H2(full)              4     -1.13730604     -1.13730604   1.33e-15  PASS
+LiH(AS:2e,3o)         6     -7.72709302     -7.72709302   5.51e-14  PASS
+
+------------------------------------------------------------------------------
+STEP 3  Reference energies used for the benchmark
+------------------------------------------------------------------------------
+molecule         qubits            E_HF   E_FCI(active)   corr/mHa
+H2(full)              4     -1.11699900     -1.13730604    20.3070
+LiH(AS:2e,3o)         6     -7.71082995     -7.72709302    16.2631
+
+------------------------------------------------------------------------------
+OVERALL: ALL CHECKS PASSED
+------------------------------------------------------------------------------
+
+========================================================================================================
+VALIDATION 2/2 -- Qiskit vs PennyLane noise equivalence
+========================================================================================================
+------------------------------------------------------------------------------
+NOISE EQUIVALENCE SELF-TEST
+------------------------------------------------------------------------------
+FakeManilaV2   median gate errors: p1=3.5387e-04  p2=1.0091e-02
+FakeSherbrooke median gate errors: p1=2.3623e-04  p2=7.7881e-03
+
+noise level             <ZZZ> qiskit   <ZZZ> pennylane      |diff|  status
+------------------------------------------------------------------------------
+noiseless               0.6980468421      0.6980468421    0.00e+00  PASS
+ManilaV2x1              0.6693464353      0.6693464353    6.66e-16  PASS
+ManilaV2x4              0.5886411159      0.5886411159    1.11e-16  PASS
+ManilaV2x20             0.2753930852      0.2753930852    4.44e-16  PASS
+------------------------------------------------------------------------------
+Noise sensitivity of the probe observable: spread=0.422654  OK
+------------------------------------------------------------------------------
+Readout-error transfer check (documents a real limitation):
+  FakeManilaV2 readout errors in Aer model : 5
+  conditions after qml.from_qiskit_noise   : 18 (gate channels only; readout NOT transferred)
+  -> raw-device models are Qiskit-only; flagged comparable=False.
+------------------------------------------------------------------------------
+OVERALL: EQUIVALENT FOOTING CONFIRMED
+------------------------------------------------------------------------------
+
+Option A (PennyLane) scoped to max_operators=10, opt_maxiter=120, lambda=1.0
+
+--------------------------------------------------------------------------------------------------------
+SWEEP: 2 molecules x 4 noise levels x 5 strategies = 40 runs
+--------------------------------------------------------------------------------------------------------
+molecule        noise         strategy                            energy   err/mHa  depth  CNOT    sec
+--------------------------------------------------------------------------------------------------------
+H2(full)        noiseless     UCCSD                          -1.13730603     0.000     82    56    1.6
+H2(full)        noiseless     HEA(reps=2)                    -1.13062485     6.681     11     6   58.4
+H2(full)        noiseless     ADAPT-VQE(standard)            -1.13730603     0.000     72    48    1.3
+H2(full)        noiseless     ADAPT-VQE(standard,PL)         -1.13730604     0.000      9     6    5.7
+H2(full)        noiseless     ADAPT-VQE(resource-aware)      -1.13730604     0.000      9     6    5.7
+H2(full)        ManilaV2x0.25 UCCSD                          -1.03807596    99.230     82    56    2.4
+H2(full)        ManilaV2x0.25 HEA(reps=2)                    -1.12205983    15.246     11     6   70.5
+H2(full)        ManilaV2x0.25 ADAPT-VQE(standard)            -1.04819981    89.106     72    48    1.1
+H2(full)        ManilaV2x0.25 ADAPT-VQE(standard,PL)         -1.12204376    15.262      9     6   52.4
+H2(full)        ManilaV2x0.25 ADAPT-VQE(resource-aware)      -1.12204376    15.262      9     6   53.2
+H2(full)        ManilaV2x0.5  UCCSD                          -0.94884346   188.463     82    56    2.3
+H2(full)        ManilaV2x0.5  HEA(reps=2)                    -1.10701153    30.295     11     6   70.8
+H2(full)        ManilaV2x0.5  ADAPT-VQE(standard)            -0.96730501   170.001     72    48    1.0
+H2(full)        ManilaV2x0.5  ADAPT-VQE(standard,PL)         -1.11689626    20.410      0     0   10.5
+H2(full)        ManilaV2x0.5  ADAPT-VQE(resource-aware)      -1.11689626    20.410      0     0   10.3
+H2(full)        ManilaV2x1    UCCSD                          -0.79627880   341.027     82    56    2.5
+H2(full)        ManilaV2x1    HEA(reps=2)                    -1.07948868    57.817     11     6   70.2
+H2(full)        ManilaV2x1    ADAPT-VQE(standard)            -0.82704262   310.263     72    48    1.1
+H2(full)        ManilaV2x1    ADAPT-VQE(standard,PL)         -1.11679351    20.513      0     0   10.9
+H2(full)        ManilaV2x1    ADAPT-VQE(resource-aware)      -1.11679351    20.513      0     0   10.6
+LiH(AS:2e,3o)   noiseless     UCCSD                          -7.72709271     0.000    363   272   37.0
+LiH(AS:2e,3o)   noiseless     HEA(reps=2)                    -7.71291952    14.173     13    10  137.0
+LiH(AS:2e,3o)   noiseless     ADAPT-VQE(standard)            -7.72709261     0.000    187   132    6.3
+LiH(AS:2e,3o)   noiseless     ADAPT-VQE(standard,PL)         -7.72708911     0.004     60    42  918.2
+LiH(AS:2e,3o)   noiseless     ADAPT-VQE(resource-aware)      -7.72709022     0.003     50    34  370.5
+LiH(AS:2e,3o)   ManilaV2x0.25 UCCSD                          -7.60243841   124.655    363   272    4.5
+LiH(AS:2e,3o)   ManilaV2x0.25 HEA(reps=2)                    -7.71021060    16.882     13    10   22.4
+LiH(AS:2e,3o)   ManilaV2x0.25 ADAPT-VQE(standard)            -7.55579525   171.298    541   388  380.8
+LiH(AS:2e,3o)   ManilaV2x0.25 ADAPT-VQE(standard,PL)         -7.72139795     5.695     16    10  121.7
+LiH(AS:2e,3o)   ManilaV2x0.25 ADAPT-VQE(resource-aware)      -7.72139795     5.695     16    10  138.9
+LiH(AS:2e,3o)   ManilaV2x0.5  UCCSD                          -7.50794855   219.144    363   272   44.0
+LiH(AS:2e,3o)   ManilaV2x0.5  HEA(reps=2)                    -7.70274444    24.349     13    10  101.3
+LiH(AS:2e,3o)   ManilaV2x0.5  ADAPT-VQE(standard)            -7.48981072   237.282    432   308  277.6
+LiH(AS:2e,3o)   ManilaV2x0.5  ADAPT-VQE(standard,PL)         -7.71690226    10.191     16    10  367.9
+LiH(AS:2e,3o)   ManilaV2x0.5  ADAPT-VQE(resource-aware)      -7.71690226    10.191     16    10  287.9
+LiH(AS:2e,3o)   ManilaV2x1    UCCSD                          -7.37958949   347.504    363   272   27.4
+LiH(AS:2e,3o)   ManilaV2x1    HEA(reps=2)                    -7.69860125    28.492     13    10  129.8
+LiH(AS:2e,3o)   ManilaV2x1    ADAPT-VQE(standard)            -7.38311269   343.980    347   252   52.4
+LiH(AS:2e,3o)   ManilaV2x1    ADAPT-VQE(standard,PL)         -7.71081343    16.280      9     6   66.8
+LiH(AS:2e,3o)   ManilaV2x1    ADAPT-VQE(resource-aware)      -7.71081343    16.280      9     6  166.9
+--------------------------------------------------------------------------------------------------------
+wrote 40 rows -> results\results.csv
+--------------------------------------------------------------------------------------------------------
+
+Next: python analyze_results.py --csv results\results.csv

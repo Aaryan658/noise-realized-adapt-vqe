@@ -1,0 +1,70 @@
+========================================================================================================
+VALIDATION 1/2 -- molecular references
+========================================================================================================
+------------------------------------------------------------------------------
+STEP 1  dhf integrals vs published full-space FCI (STO-3G)
+------------------------------------------------------------------------------
+molecule         qubits           E_dhf           E_lit    err/mHa  status
+H2                    4     -1.13730604     -1.13727000     0.0360  PASS
+LiH                  12     -7.88240342     -7.88236200     0.0414  PASS
+
+------------------------------------------------------------------------------
+STEP 2  Qiskit <-> PennyLane Hamiltonian bridge (must be exact)
+------------------------------------------------------------------------------
+molecule         qubits     E_pennylane        E_qiskit    diff/Ha  status
+H2(full)              4     -1.13730604     -1.13730604   8.88e-16  PASS
+LiH(AS:2e,3o)         6     -7.72709302     -7.72709302   4.62e-14  PASS
+
+------------------------------------------------------------------------------
+STEP 3  Reference energies used for the benchmark
+------------------------------------------------------------------------------
+molecule         qubits            E_HF   E_FCI(active)   corr/mHa
+H2(full)              4     -1.11699900     -1.13730604    20.3070
+LiH(AS:2e,3o)         6     -7.71082995     -7.72709302    16.2631
+
+------------------------------------------------------------------------------
+OVERALL: ALL CHECKS PASSED
+------------------------------------------------------------------------------
+
+========================================================================================================
+VALIDATION 2/2 -- Qiskit vs PennyLane noise equivalence
+========================================================================================================
+------------------------------------------------------------------------------
+NOISE EQUIVALENCE SELF-TEST
+------------------------------------------------------------------------------
+FakeManilaV2   median gate errors: p1=3.5387e-04  p2=1.0091e-02
+FakeSherbrooke median gate errors: p1=2.3623e-04  p2=7.7881e-03
+
+noise level             <ZZZ> qiskit   <ZZZ> pennylane      |diff|  status
+------------------------------------------------------------------------------
+noiseless               0.6980468421      0.6980468421    0.00e+00  PASS
+ManilaV2x1              0.6693464353      0.6693464353    6.66e-16  PASS
+ManilaV2x4              0.5886411159      0.5886411159    1.11e-16  PASS
+ManilaV2x20             0.2753930852      0.2753930852    4.44e-16  PASS
+------------------------------------------------------------------------------
+Noise sensitivity of the probe observable: spread=0.422654  OK
+------------------------------------------------------------------------------
+Readout-error transfer check (documents a real limitation):
+  FakeManilaV2 readout errors in Aer model : 5
+  conditions after qml.from_qiskit_noise   : 18 (gate channels only; readout NOT transferred)
+  -> raw-device models are Qiskit-only; flagged comparable=False.
+------------------------------------------------------------------------------
+OVERALL: EQUIVALENT FOOTING CONFIRMED
+------------------------------------------------------------------------------
+
+Option A (PennyLane) scoped to max_operators=10, opt_maxiter=120, lambda=1.0
+
+--------------------------------------------------------------------------------------------------------
+SWEEP: 1 molecules x 3 noise levels x 5 strategies = 15 runs
+--------------------------------------------------------------------------------------------------------
+molecule        noise         strategy                            energy   err/mHa  depth  CNOT    sec
+--------------------------------------------------------------------------------------------------------
+H2(full)        noiseless     UCCSD                          -1.13730603     0.000     82    56    0.5
+H2(full)        noiseless     HEA(reps=2)                    -1.13062485     6.681     11     6   13.8
+H2(full)        noiseless     ADAPT-VQE(standard)            -1.13730604     0.000     72    48    0.3
+H2(full)        noiseless     ADAPT-VQE(standard,PL)         -1.13730604     0.000      9     6    1.5
+H2(full)        noiseless     ADAPT-VQE(resource-aware)      -1.13730604     0.000      9     6    1.6
+H2(full)        ManilaV2x1    UCCSD                          -0.79627880   341.027     82    56    0.6
+H2(full)        ManilaV2x1    HEA(reps=2)                    -1.08009202    57.214     11     6   37.0
+H2(full)        ManilaV2x1    ADAPT-VQE(standard)            -0.82704262   310.263     72    48    0.5
+H2(full)        ManilaV2x1    ADAPT-VQE(standard,PL)         -0.68459910   452.707     90    60  198.7

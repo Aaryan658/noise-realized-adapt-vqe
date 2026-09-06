@@ -1,0 +1,46 @@
+================================================================================================
+H2(full)
+================================================================================================
+  pool size            : 12
+  distinct CNOT costs  : [4, 6]
+    single  n=4   cost 4..4
+    double  n=8   cost 6..6
+  cost spectrum non-trivial: True
+
+  running standard ADAPT (<= 10 ops, noiseless) ...
+    E=-1.13730604  err=0.000 mHa  ops=1  depth=9  cnot=6  0.89s
+    seq: D:XXYX@0123[cx=6]
+  running resource-aware ADAPT lam=1 (<= 10 ops) ...
+    E=-1.13730604  err=0.000 mHa  ops=1  depth=9  cnot=6  4.5s
+    seq: D:XXYX@0123[cx=6]
+  --> SELECTION IDENTICAL (std vs resource-aware, lam=1)
+      dCNOT=+0  ddepth=+0  dE_err=+0.000 mHa
+
+  lambda=0 consistency check ...
+    ops match=True  |dE|=0.00e+00  PASS
+
+================================================================================================
+LiH(AS:2e,3o)
+================================================================================================
+  pool size            : 40
+  distinct CNOT costs  : [4, 6, 8, 10]
+    single  n=8   cost 4..8
+    double  n=32  cost 6..10
+  cost spectrum non-trivial: True
+
+  running standard ADAPT (<= 10 ops, noiseless) ...
+    E=-7.72708911  err=0.004 mHa  ops=8  depth=60  cnot=42  966.35s
+    seq: D:XXYX@0123[cx=6] S:YZX@012[cx=4] D:XXYX@0145[cx=6] D:YXYY@0145[cx=6] S:YZX@123[cx=4] D:XXYX@0123[cx=6] S:YZX@012[cx=4] D:YXYY@0145[cx=6]
+  running resource-aware ADAPT lam=1 (<= 10 ops) ...
+    E=-7.72709022  err=0.003 mHa  ops=7  depth=50  cnot=34  724.77s
+    seq: D:XXYX@0123[cx=6] S:YZX@012[cx=4] D:XXYX@0145[cx=6] D:YXYY@0145[cx=6] S:YZX@123[cx=4] S:XZY@123[cx=4] S:XZY@012[cx=4]
+  --> SELECTION DIFFERS (std vs resource-aware, lam=1)
+      dCNOT=-8  ddepth=-10  dE_err=-0.001 mHa
+
+  lambda=0 consistency check ...
+    ops match=True  |dE|=0.00e+00  PASS
+
+================================================================================================
+selection diverges at lam=1 for >=1 molecule : True
+OVERALL: FIX VERIFIED -- safe to run the sweep
+================================================================================================

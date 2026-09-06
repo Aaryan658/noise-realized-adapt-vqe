@@ -1,0 +1,20 @@
+# Resource-Aware ADAPT-VQE  --  CIA-3
+# Validated on Windows 11 / CPython 3.14.2 (see README "Environment notes").
+#
+# NOTE: pyscf is deliberately ABSENT. It has no Windows wheels and its source
+# build fails (cmake). PennyLane's built-in differentiable Hartree-Fock ("dhf")
+# backend replaces it and reproduces literature FCI to <0.05 mHa. See README.
+
+qiskit>=2.3.0
+qiskit-aer>=0.17.2
+qiskit-nature>=0.8.0
+qiskit-algorithms>=0.4.0
+qiskit-ibm-runtime>=0.45.0      # fake_provider: FakeManilaV2 / FakeSherbrooke
+
+pennylane>=0.45.0
+pennylane-qiskit>=0.45.0        # provides qml.from_qiskit_noise (noise bridge)
+
+numpy>=2.0
+scipy>=1.13
+matplotlib>=3.8
+pandas>=2.0
