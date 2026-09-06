@@ -19,7 +19,7 @@ mechanisms make it inert, and removing the first one (which was a bug) exposed
 the second one (which is structural).
 
 All numbers below are from `results/results.csv` (40 runs: 2 molecules x 4 noise
-scales x 5 strategies), `results/summary.csv`, and `verify_fix.log`.
+scales x 5 strategies), `results/summary.csv`, and `logs/verify_fix.log`.
 
 ---
 
@@ -74,7 +74,7 @@ Operator sequences (from `results.csv`) confirm the two rules make
 
 ### `lambda = 0` consistency
 
-`verify_fix.log`, noiseless, both molecules:
+`logs/verify_fix.log`, noiseless, both molecules:
 
 ```
 lambda=0 consistency check ...

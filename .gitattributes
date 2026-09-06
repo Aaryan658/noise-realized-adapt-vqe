@@ -1,0 +1,10 @@
+# Recipe lines in a Makefile must stay tab-indented and LF-terminated
+Makefile      text eol=lf
+*.mk          text eol=lf
+*.sh          text eol=lf
+
+# Data and notebooks: normalize as text, keep diffs readable
+*.csv         text
+*.ipynb       text
+*.py          text
+*.md          text

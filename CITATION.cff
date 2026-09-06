@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this code or data, please cite it as below."
+title: "Noise-Realized Operator Selection for ADAPT-VQE: a cross-framework benchmark on H2 and LiH under calibrated depolarizing noise"
+abstract: >-
+  A controlled benchmark of ADAPT-VQE operator-selection rules for H2 and
+  stretched LiH (STO-3G) under depolarizing noise calibrated to IBM
+  FakeManilaV2, with Qiskit and PennyLane placed on an equivalent noise
+  footing. Standard qubit-ADAPT is shown to beat UCCSD, HEA, and routed
+  Qiskit-ADAPT at every noise level. Three cost- and energy-aware selection
+  rules (resource-aware, noise-realized, self-tuning lambda) are tested and
+  found to be a characterized null on these minimal-basis systems; a matched
+  operator-count control isolates the reason.
+type: software
+authors:
+  - alias: Aaryan658
+    given-names: Aaryan
+repository-code: "https://github.com/Aaryan658/noise-realized-adapt-vqe"
+license: MIT
+keywords:
+  - variational quantum eigensolver
+  - ADAPT-VQE
+  - operator selection
+  - quantum chemistry
+  - NISQ
+  - depolarizing noise
+date-released: 2026-09-06
