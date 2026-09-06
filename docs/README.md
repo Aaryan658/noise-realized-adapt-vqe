@@ -2,7 +2,8 @@
 
 | File | Contents |
 |---|---|
-| [`MANUSCRIPT.md`](MANUSCRIPT.md) | Full IEEE-format write-up: literature review, methodology, implementation, results and comparative analysis, references. |
+| [`REPORT.md`](REPORT.md) | The full course report, keyed to the mandated headings (Title, Literature Review, Methodology, Proof of Concept / Implementation, Result Analysis and Comparative Analysis, References). Self-contained; every number is reproduced by the repo. |
+| [`MANUSCRIPT.md`](MANUSCRIPT.md) | The same study in IEEE preprint form (I. Literature review ... V. References). Prose overlaps `REPORT.md`; kept for the paper-style section flow. |
 | [`RESULTS.md`](RESULTS.md) | The resource-aware selection rule in detail — the analytic reason it is inert on minimal-basis systems, with the supporting operator sequences. |
 | [`NOVEL_RESULTS.md`](NOVEL_RESULTS.md) | The `noise_realized` and self-tuning-λ rules: the free-running sweep, the **matched operator-count control** (`fixed_k`), and the honest limitations. |
 | [`IMPROVEMENTS.md`](IMPROVEMENTS.md) | Literature survey of alternative ADAPT-VQE selection and cost-reduction methods, with DOIs. |
