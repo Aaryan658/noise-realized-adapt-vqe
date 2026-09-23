@@ -446,11 +446,11 @@ gate count rather than the circuit depth [10]. It is presented as the study's
 positive result and the control against which the selection rules are measured;
 it is not claimed as a novel algorithm.
 
-*Figure 1 (`results/energy_error_vs_noise.png`):* energy error vs noise scale,
-one panel per molecule, all strategies. *Figure 2
-(`results/circuit_depth.png`):* transpiled depth and CNOT count per strategy;
-UCCSD and Qiskit ADAPT are 100 to 270 CNOTs, the PennyLane qubit-ADAPT circuits
-6 to 36.
+*Figure 1 (`results/novel/energy_error_vs_noise.png`):* energy error vs noise
+scale, one panel per molecule, all strategies. *Figure 2
+(`results/novel/circuit_depth.png`):* transpiled depth and CNOT count per
+strategy; UCCSD and Qiskit ADAPT are 100 to 270 CNOTs, the PennyLane
+qubit-ADAPT circuits 6 to 36.
 
 ---
 
