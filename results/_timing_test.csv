@@ -1,0 +1,2 @@
+strategy,framework,option,molecule,n_qubits,noise_level,noise_scale,comparable,energy,energy_error,fci_energy,n_parameters,iterations,n_operators,depth,cnot_count,gate_count,converged,operators,lambda,lambda_init,lambda_final,n_restarts,runtime_s,timestamp,error
+"ADAPT-VQE(standard,PL)",pennylane,A-baseline,H2(full),4,ManilaV2x0.25,0.25,True,-1.12204376461112,0.015262271350526602,-1.1373060359616467,1,1,1,9,6,15,True,D:YYYX@0123[cx=6],,,,,7.1,2026-09-23T12:04:58,

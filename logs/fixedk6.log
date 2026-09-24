@@ -1,0 +1,47 @@
+================================================================================================
+FAIR TEST  LiH(AS:2e,5o)  10 qubits  FCI(active)=-7.79850425 Ha
+scales=(0.0, 0.05, 0.1, 0.2)  max_operators=16  opt_maxiter=200  rules=['standard', 'resource_aware', 'NR_c4', 'NR_c8']
+already done: 0 cells  ->  results\results_10q_fixedk6.csv
+================================================================================================
+
+NOISE noiseless  scale=0  p1=0.000e+00 p2=0.000e+00
+  standard         err=    2.945 mHa  CNOT=52   ops=6   148s
+      D:XXYX@0189[cx=6] D:XXYZZZZX@01345678[cx=14] D:YYYZZZZZZX@0123456789[cx=18] D:XXXY@0123[cx=6] S:XZY@012[cx=4] S:YZX@012[cx=4]
+  resource_aware   err=    3.668 mHa  CNOT=54   ops=6   148s
+      D:XXYX@0189[cx=6] D:XXYX@0123[cx=6] D:XXYZZZZX@01345678[cx=14] D:YXYY@0123[cx=6] S:XZY@123[cx=4] D:XXYZZZZZZX@0123456789[cx=18]
+  NR_c4            err=    2.945 mHa  CNOT=52   ops=6   256s
+      D:YYXY@0189[cx=6] D:YYYZZZZX@01345678[cx=14] D:YYYZZZZZZX@0123456789[cx=18] D:YYXY@0123[cx=6] S:XZY@123[cx=4] S:YZX@123[cx=4]
+  NR_c8            err=    2.945 mHa  CNOT=52   ops=6   388s
+      D:YYXY@0189[cx=6] D:XYXZZZZX@01345678[cx=14] D:XYXX@0123[cx=6] D:XYYZZZZZZY@0123456789[cx=18] S:XZY@012[cx=4] S:YZX@012[cx=4]
+
+NOISE ManilaV2x0.05  scale=0.05  p1=1.769e-05 p2=5.045e-04
+  standard         err=   13.501 mHa  CNOT=52   ops=6   304s
+      D:YYYX@0189[cx=6] D:XYXZZZZX@01345678[cx=14] D:YXYZZZZZZY@0123456789[cx=18] D:XYXX@0123[cx=6] S:XZY@012[cx=4] S:YZX@012[cx=4]
+  resource_aware   err=   14.276 mHa  CNOT=54   ops=6   291s
+      D:YYYX@0189[cx=6] D:XXXY@0123[cx=6] D:YYYZZZZX@01345678[cx=14] D:YXYY@0123[cx=6] S:XZY@123[cx=4] D:YXXZZZZZZX@0123456789[cx=18]
+  NR_c4            err=   13.130 mHa  CNOT=52   ops=6   524s
+      D:YXYY@0189[cx=6] D:XXYZZZZX@01345678[cx=14] D:XXYZZZZZZX@0123456789[cx=18] D:XXXY@0123[cx=6] S:XZY@123[cx=4] S:YZX@123[cx=4]
+  NR_c8            err=   13.116 mHa  CNOT=52   ops=6   804s
+      D:YXYY@0189[cx=6] D:XXYZZZZX@01345678[cx=14] D:YXYY@0123[cx=6] D:YXXZZZZZZX@0123456789[cx=18] S:XZY@123[cx=4] S:YZX@123[cx=4]
+
+NOISE ManilaV2x0.1  scale=0.1  p1=3.539e-05 p2=1.009e-03
+  standard         err=   29.705 mHa  CNOT=64   ops=6   254s
+      D:YXYY@0189[cx=6] D:YXXZZZZX@01345678[cx=14] D:YXYZZZZZZY@0123456789[cx=18] D:XYXX@0123[cx=6] S:XZY@012[cx=4] S:YZZZZZZZX@012345678[cx=16]
+  resource_aware   err=   24.739 mHa  CNOT=54   ops=6   257s
+      D:YXYY@0189[cx=6] D:XYXX@0123[cx=6] D:XYYZZZZY@01345678[cx=14] D:XXXY@0123[cx=6] S:YZX@123[cx=4] D:XXYZZZZZZX@0123456789[cx=18]
+  NR_c4            err=   30.012 mHa  CNOT=64   ops=6   518s
+      D:YXYY@0189[cx=6] D:XXYZZZZX@01345678[cx=14] D:XXYZZZZZZX@0123456789[cx=18] D:XXXY@0123[cx=6] S:XZY@123[cx=4] S:YZZZZZZZX@123456789[cx=16]
+  NR_c8            err=   23.210 mHa  CNOT=52   ops=6   669s
+      D:YXYY@0189[cx=6] D:XXYZZZZX@01345678[cx=14] D:YXYY@0123[cx=6] D:YXXZZZZZZX@0123456789[cx=18] S:XZY@123[cx=4] S:YZX@123[cx=4]
+
+NOISE ManilaV2x0.2  scale=0.2  p1=7.077e-05 p2=2.018e-03
+  standard         err=   55.981 mHa  CNOT=64   ops=6   334s
+      D:XXXY@0189[cx=6] D:XXXZZZZY@01345678[cx=14] D:XXXZZZZZZY@0123456789[cx=18] D:YYYX@0123[cx=6] S:YZX@012[cx=4] S:XZZZZZZZY@012345678[cx=16]
+  resource_aware   err=   45.565 mHa  CNOT=54   ops=6   280s
+      D:XXXY@0189[cx=6] D:YYYX@0123[cx=6] D:YYYZZZZX@01345678[cx=14] D:YXYY@0123[cx=6] S:YZX@123[cx=4] D:YXXZZZZZZX@0123456789[cx=18]
+  NR_c4            err=   55.586 mHa  CNOT=64   ops=6   528s
+      D:YXYY@0189[cx=6] D:XXYZZZZX@01345678[cx=14] D:YYYZZZZZZX@0123456789[cx=18] D:XXXY@0123[cx=6] S:XZY@012[cx=4] S:YZZZZZZZX@012345678[cx=16]
+  NR_c8            err=   55.149 mHa  CNOT=64   ops=6   815s
+      D:YXYY@0189[cx=6] D:XXYZZZZX@01345678[cx=14] D:YXYY@0123[cx=6] D:YXXZZZZZZX@0123456789[cx=18] S:XZY@012[cx=4] S:YZZZZZZZX@012345678[cx=16]
+
+wrote -> results\results_10q_fixedk6.csv

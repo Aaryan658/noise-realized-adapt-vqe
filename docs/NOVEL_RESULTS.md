@@ -211,16 +211,103 @@ LiH(2e,3o) (stretched 3.0 A), `lam_init = 1`, `opt_maxiter = 100`,
    the plateau stop is allowed to roll back the last non-improving picks).
    The fixed-k circuits are a control, not a recommended configuration.
 
-## A fair test
+## The fair test: LiH(2e,5o), 10 qubits (GPU)
 
-LiH(2e,5o), 10 qubits, noise scales `{0, 0.05, 0.1, 0.2}`, `max_operators = 16`,
-`n_candidates in {4, 8}`, with and without `adaptive_lambda`, plus a finite-shot
-run (e.g. 1e4 shots) at the best noise level. This is where a deep-enough
-ansatz + a cost-varied pool should let both novel rules show a larger, and
-statistically robust, separation from gradient ADAPT. Cost estimate ~150 s per
-candidate re-optimisation on 10 noisy qubits x 4 candidates x ~16 steps x cells
--> a few GPU-days-equivalent on CPU; out of scope for the course timeline but
-the natural next experiment.
+This was the experiment the previous sections left as future work. It was made
+tractable by a CUDA density-matrix simulator, [`gpu_backend.py`](../gpu_backend.py),
+enabled with `ADAPT_BACKEND=gpu`. It reproduces `default.mixed` to ~1e-14 (same
+PennyLane gate decomposition, same Qiskit-convention depolarizing channels, same
+noisy HF preparation) and evaluates a 10-qubit energy in ~0.02-0.04 s versus
+50-140 s on the CPU path (~4000x). Setup: LiH stretched to 3.0 A, (2e,5o),
+144-operator qubit-ADAPT pool, noise scales `{0, 0.05, 0.1, 0.2}` x FakeManilaV2
+median gate errors, `opt_maxiter = 200`, exact expectations (no shot noise).
+Driver: [`fair_test_10q.py`](../fair_test_10q.py); raw data in
+`results/results_10q*.csv`. All runs are deterministic (single run per cell).
+
+### Free-running (both stopping rules on, up to 16 operators)
+
+Energy error vs active-space FCI in mHa, (CNOT count):
+
+| noise | standard | resource-aware | noise-realized (4 cand.) | noise-realized (8 cand.) |
+|---|---|---|---|---|
+| 0 | 0.147 (128) | 0.138 (118) | 0.040 (130) | 0.042 (130) |
+| 0.05 | 13.50 (52) | 14.05 (58) | 13.13 (52) | 13.12 (52) |
+| 0.1 | 23.17 (48) | 24.74 (54) | 22.92 (48) | 22.87 (48) |
+| 0.2 | 52.98 (20) | 43.58 (36) | 41.57 (44) | 41.48 (44) |
+
+Adaptive lambda reproduced fixed lambda exactly (energy and operator sequence) in
+all 24 cells, the same structural null as on 6 qubits.
+
+### Matched operator count (`fixed_k`, both stopping rules off)
+
+K = 4 (the length noise-realized reached at 0.2x), error in mHa:
+
+| noise | standard | resource-aware | NR (4 cand.) | NR (8 cand.) |
+|---|---|---|---|---|
+| 0 | 5.52 | 24.55 | 5.52 | 5.52 |
+| 0.05 | 14.98 | 30.14 | 14.63 | 14.60 |
+| 0.1 | 23.90 | 35.71 | 23.68 | 23.61 |
+| 0.2 | 42.26 | 46.52 | 41.87 | 41.48 |
+
+K = 6, error in mHa (CNOT count):
+
+| noise | standard | resource-aware | NR (4 cand.) | NR (8 cand.) |
+|---|---|---|---|---|
+| 0 | 2.95 (52) | 3.67 (54) | 2.95 (52) | 2.95 (52) |
+| 0.05 | 13.50 (52) | 14.28 (54) | 13.13 (52) | 13.12 (52) |
+| 0.1 | 29.71 (64) | 24.74 (54) | 30.01 (64) | 23.21 (52) |
+| 0.2 | 55.98 (64) | 45.57 (54) | 55.59 (64) | 55.15 (64) |
+
+### Findings
+
+1. **The larger space does not rescue selection rules; circuit length dominates.**
+   Even at 0.05x device noise no rule gets within 13 mHa of FCI, and runs stop at
+   5-7 operators. Error grows steeply with noise scale and with operator count
+   (standard at 0.2x: 42.3 mHa with 4 operators, 56.0 with 6).
+2. **The free-running 11 mHa lead of noise-realized over standard at 0.2x is
+   mostly the stopping rule.** Standard's plateau stop ended it at 2 operators and
+   20 CNOTs. At matched K = 4 (44 CNOTs each) the gap is 0.8 mHa.
+3. **Noise-realized is consistently but marginally ahead at K = 4** (0.2-0.8 mHa at
+   every noisy scale), **and not reliably signed at K = 6** (NR-4 is +0.3 mHa worse
+   than standard at 0.1x; NR-8 is 6.5 mHa better at 0.1x with 52 vs 64 CNOTs, but
+   ties standard at 0.2x). Its edge depends on the candidate count and is not a
+   stable ordering.
+4. **Cost-aware selection helps only past the noise-optimal length.** At K = 6 and
+   0.1x-0.2x, resource-aware is 5-10 mHa better than standard because it selects
+   cheaper operators (54 vs 64 CNOTs). At K = 4 it is 4-25 mHa worse, since there
+   is no excess depth to remove.
+5. **Noiselessly** standard and noise-realized select the same operators at K = 4
+   and every rule reaches chemical accuracy in the free-running case.
+
+### What this does and does not support
+
+Supported (in this simulation): gradient selection with a plateau stop is
+competitive with the more expensive rule once circuit length is controlled, and
+the cost penalty pays off only when the ansatz would otherwise grow past the
+noise-optimal length. Not supported: that noise-realized selection is generally
+better. Limits: one molecule and geometry, one deterministic run per cell (no
+error bars, so differences of a few tenths of a mHa are not established), exact
+expectations (no shot noise), depolarizing gate noise only (no readout, coherent,
+or amplitude-damping errors).
+
+### Next experiments
+
+Literature review (2025-2026) points to finite-shot operator selection as the
+largest open risk: distinguishing the top gradient needs ~1/||g||^2 shots and
+gradient troughs cause false convergence (arXiv:2512.25004); noise, coherent and
+incoherent, can prevent selection from converging and is mitigated by
+dynamical decoupling + ZNE (arXiv:2609.17501); gradient-free energy-fit selection
+(GGA-VQE, Feniou et al. 2025) is more shot-noise resilient. Planned, in order:
+
+1. Finite-shot selection: per-term shot noise in the GPU simulator, sweep
+   1e3-1e6 shots, report selection accuracy and stall rate, and compare rules at
+   equal *total shots* (not equal iterations).
+2. Realistic channels: amplitude damping, dephasing, coherent over-rotation,
+   readout error; test TETRIS layering on the non-depolarizing channels.
+3. Mitigation on the selection step: ZNE by gate folding and readout mitigation.
+4. Statistics: bond-length sweep and other molecules, >= 5 repeats, paired
+   comparisons with Wilson intervals (arXiv:2503.16589 for repeat counts).
+5. Emulator (FakeBackend with routing and readout), then a small real-device run.
 
 ---
 

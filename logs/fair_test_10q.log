@@ -1,0 +1,17 @@
+================================================================================================
+FAIR TEST  LiH(AS:2e,5o)  10 qubits  FCI(active)=-7.79850425 Ha
+scales=(0.0, 0.05, 0.1, 0.2)  max_operators=16  opt_maxiter=200  rules=['standard', 'resource_aware', 'NR_c4', 'NR_c8', 'NR_adaptive_c4', 'NR_adaptive_c8']
+already done: 0 cells  ->  results\results_10q.csv
+================================================================================================
+
+NOISE noiseless  scale=0  p1=0.000e+00 p2=0.000e+00
+  standard         err=    0.147 mHa  CNOT=128  ops=16  390s
+      D:XXYX@0189[cx=6] D:XXYZZZZX@01345678[cx=14] D:YYYZZZZZZX@0123456789[cx=18] D:XXXY@0123[cx=6] S:XZY@012[cx=4] S:YZX@012[cx=4] S:YZZZZZZZX@123456789[cx=16] S:XZZZZZZZY@123456789[cx=16] D:YYYX@0123[cx=6] D:YXXX@0145[cx=6] D:XXXY@0145[cx=6] D:YXYY@0167[cx=6] D:XXXY@0167[cx=6] D:XYYY@0189[cx=6] S:XZY@123[cx=4] S:YZX@123[cx=4]
+  resource_aware   err=    0.138 mHa  CNOT=118  ops=16  651s
+      D:XXYX@0189[cx=6] D:XXYX@0123[cx=6] D:XXYZZZZX@01345678[cx=14] D:YXYY@0123[cx=6] S:XZY@123[cx=4] D:XXYZZZZZZX@0123456789[cx=18] S:YZX@123[cx=4] S:XZY@012[cx=4] S:YZX@012[cx=4] D:XXYX@0145[cx=6] D:YXYY@0167[cx=6] S:YZZZZZZZX@123456789[cx=16] D:XXYX@0123[cx=6] D:YXYY@0145[cx=6] D:XXYX@0167[cx=6] D:YYYX@0189[cx=6]
+  NR_c4            err=    0.040 mHa  CNOT=130  ops=16  1178s
+      D:YYXY@0189[cx=6] D:YYYZZZZX@01345678[cx=14] D:YYYZZZZZZX@0123456789[cx=18] D:YYXY@0123[cx=6] S:XZY@123[cx=4] S:YZX@123[cx=4] S:YZZZZZZZX@012345678[cx=16] S:XZY@012[cx=4] D:XXYX@0189[cx=6] S:YZZZZZZZX@123456789[cx=16] D:YXXX@0145[cx=6] D:YYYX@0145[cx=6] D:YXXX@0167[cx=6] D:YYXY@0167[cx=6] D:YXXX@0123[cx=6] D:YYYX@0189[cx=6]
+  NR_c8            err=    0.042 mHa  CNOT=130  ops=16  1380s
+      D:YYXY@0189[cx=6] D:XYXZZZZX@01345678[cx=14] D:XYXX@0123[cx=6] D:XYYZZZZZZY@0123456789[cx=18] S:XZY@012[cx=4] S:YZX@012[cx=4] S:XZZZZZZZY@123456789[cx=16] S:YZX@123[cx=4] D:YXYY@0189[cx=6] S:YZZZZZZZX@012345678[cx=16] D:YYXY@0145[cx=6] D:XYXX@0145[cx=6] D:YYYX@0167[cx=6] D:YYYX@0123[cx=6] D:XYXX@0167[cx=6] D:XYYY@0189[cx=6]
+  NR_adaptive_c4   err=    0.040 mHa  CNOT=130  ops=16  1416s
+      D:YYXY@0189[cx=6] D:YYYZZZZX@01345678[cx=14] D:YYYZZZZZZX@0123456789[cx=18] D:YYXY@0123[cx=6] S:XZY@123[cx=4] S:YZX@123[cx=4] S:YZZZZZZZX@012345678[cx=16] S:XZY@012[cx=4] D:XXYX@0189[cx=6] S:YZZZZZZZX@123456789[cx=16] D:YXXX@0145[cx=6] D:YYYX@0145[cx=6] D:YXXX@0167[cx=6] D:YYXY@0167[cx=6] D:YXXX@0123[cx=6] D:YYYX@0189[cx=6]

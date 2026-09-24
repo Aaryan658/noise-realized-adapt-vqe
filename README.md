@@ -10,8 +10,9 @@ strategies is attributable to the strategy and not the framework.
 > reproducible. The three novel selection rules are a **characterized null**:
 > none shows a robust advantage over gradient selection on the two test
 > systems, and the reasons are structural (see [Selection-rule
-> experiments](#selection-rule-experiments-null-result)). A 10-qubit active
-> space is required for a fair test; that is future work.
+> experiments](#selection-rule-experiments-null-result)). The 10-qubit
+> LiH(2e,5o) fair test has now been run on a GPU density-matrix backend and does
+> not change that conclusion (see [10-qubit fair test](#10-qubit-fair-test-gpu)).
 
 ---
 
@@ -51,12 +52,34 @@ one code path in
 
 **Bottom line:** on H<sub>2</sub> and LiH(2e,3o) the ansatz is 1–6 operators
 under noise — too shallow for a selection rule to express an advantage, and the
-pool is too cost-degenerate for the cost penalty to bite. The honest next
-experiment is LiH(2e,5o) (10 qubits); see [`docs/NOVEL_RESULTS.md` § A fair
-test](docs/NOVEL_RESULTS.md).
+pool is too cost-degenerate for the cost penalty to bite. The 10-qubit test
+that this pointed to is reported next.
 
 At ≥ 1× the real `FakeManilaV2` gate-error rate every method fails to recover
 any correlation energy, consistent with published gate-error thresholds for VQE.
+
+## 10-qubit fair test (GPU)
+
+LiH(2e,5o), 10 qubits, 144-operator pool, noise 0–0.2× device rate, on a CUDA
+density-matrix simulator ([`gpu_backend.py`](gpu_backend.py), matches
+`default.mixed` to ~1e-14, ~4000× faster). Energy error vs FCI (mHa):
+
+| noise | standard | resource-aware | noise-realized (8 cand.) |
+|---|---|---|---|
+| 0 | 0.147 | 0.138 | 0.042 |
+| 0.05× | 13.50 | 14.05 | 13.12 |
+| 0.1× | 23.17 | 24.74 | 22.87 |
+| 0.2× | 52.98 (2 ops) | 43.58 | 41.48 |
+
+- Even at 0.05× no rule gets within 13 mHa of FCI; circuit length, not operator
+  choice, is the bottleneck.
+- The 0.2× lead of noise-realized (11 mHa) is mostly the plateau stop ending
+  standard at 2 operators. At a matched 4 operators the gap is 0.8 mHa.
+- At a matched 6 operators the cost-aware rules win by 5–10 mHa at 0.1–0.2×
+  (cheaper operators), and noise-realized's sign is inconsistent.
+- Single deterministic runs on one molecule with exact expectations and
+  depolarizing-only noise: differences of a few tenths of a mHa are not
+  established. Full tables and caveats: [`docs/NOVEL_RESULTS.md`](docs/NOVEL_RESULTS.md).
 
 ---
 
@@ -69,6 +92,8 @@ qiskit_baselines.py               Option B baselines: UCCSD, HEA, Qiskit AdaptVQ
 pennylane_resource_aware_adapt.py qubit-ADAPT pool + the four selection rules + self-test
 run_experiments.py                sweep: strategies × molecules × noise → CSV
 fixed_k_experiment.py             matched-operator-count control (fixed_k) for the selection rules
+gpu_backend.py                    CUDA density-matrix simulator (ADAPT_BACKEND=gpu), self-tests vs default.mixed
+fair_test_10q.py                  LiH(2e,5o) 10-qubit grid (free-running and --fixed-k), resumable
 analyze_results.py                comparison tables + figures
 verify_fix.py                     pre-sweep checks: cost spread, selection divergence at λ=1, λ=0 ≡ standard
 
@@ -110,6 +135,22 @@ make fixed-k       # matched-operator-count control -> results/results_fixed_k.c
 
 ```bash
 make figures       # comparison tables + PNGs from the CSVs
+```
+
+The 10-qubit fair test needs a CUDA GPU and a CUDA build of torch (not in
+`requirements.txt`; installed into the venv with
+`pip install torch --index-url https://download.pytorch.org/whl/cu128`):
+
+```bash
+python gpu_backend.py                        # cross-check vs default.mixed (6 and 10 qubits)
+```
+
+```bash
+python fair_test_10q.py                      # free-running grid -> results/results_10q.csv (~2.5 h)
+```
+
+```bash
+python fair_test_10q.py --fixed-k 4 --rules standard resource_aware NR_c4 NR_c8 --out results/results_10q_fixedk4.csv
 ```
 
 Without `make`, the underlying commands are listed in the [`Makefile`](Makefile).

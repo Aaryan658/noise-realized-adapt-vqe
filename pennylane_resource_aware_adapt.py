@@ -103,6 +103,7 @@ At theta=0 the selection derivative equals the ADAPT commutator gradient
 
 from __future__ import annotations
 
+import os
 import time
 import warnings
 from dataclasses import dataclass
@@ -331,6 +332,13 @@ def _make_qnode(spec, noise: nz.NoiseSpec, selected: list[PoolOperator],
 
     Order is decompose -> add_noise; see module docstring note 2.
     """
+    if (os.environ.get("ADAPT_BACKEND", "cpu").lower() == "gpu"
+            and diff_method is None
+            and not getattr(noise, "backend", None)):
+        # Forward-only CUDA density-matrix path; the loop needs no autodiff.
+        import gpu_backend
+        return gpu_backend.make_gpu_qnode(spec, noise, selected, trailing)
+
     H, n_qubits, hf, _ = mol.pennylane_hamiltonian(spec)
     dev = qml.device("default.mixed", wires=n_qubits)
     ops = list(selected) + ([trailing] if trailing is not None else [])
