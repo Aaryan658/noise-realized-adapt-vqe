@@ -37,7 +37,13 @@ still deliver, `lambda` relaxes. The `lambda` trajectory is logged
 
 ---
 
-## Result: noise-realized beats gradient selection at equal circuit cost
+## Free-running result (LiH(2e,3o)): noise-realized ahead at equal circuit cost
+
+> **Superseded in part.** This is the free-running result on the 6-qubit system.
+> The matched-operator-count control below shows the gap is largely a stopping-rule
+> (circuit-length) effect, and the 10-qubit fair test at the end finds a
+> marginal, not reliably signed, edge. Read it as the observation that motivated
+> those controls, not as an established advantage.
 
 **Energy error (mHa), PennyLane strategies:**
 
@@ -197,8 +203,9 @@ LiH(2e,3o) (stretched 3.0 A), `lam_init = 1`, `opt_maxiter = 100`,
    budget, the pure operator-choice contribution of noise-realized on
    LiH(2e,3o) is ~0 and not reliably signed. This does not refute the rule --
    it means **LiH(2e,3o) is too small to demonstrate it**, the same
-   conclusion the free-running data reached from the other direction. A
-   10-qubit active space (below) remains the test that could settle it.
+   conclusion the free-running data reached from the other direction. The
+   10-qubit test (below) was run to settle it; it finds the same marginal,
+   not reliably signed edge.
 
 5. **`adaptive_lambda` again reproduces fixed-`lambda` exactly** at every
    scale. `lambda_final` climbs to the 8.0 ceiling at 0.05x and 0.2x (six
@@ -313,23 +320,25 @@ dynamical decoupling + ZNE (arXiv:2609.17501); gradient-free energy-fit selectio
 
 ## Paragraph for the report
 
-> We introduce two operator-selection rules for noisy ADAPT-VQE. The first,
-> *noise-realized selection*, replaces the energy gradient -- a noise-blind and,
-> under noise, poorly estimated predictor of an operator's value -- with the
-> energy the operator *actually* achieves when appended and re-optimised in the
-> presence of the noise channel, penalised by its CNOT cost. On H2 and stretched
-> LiH (STO-3G, depolarising noise calibrated to FakeManilaV2) it is more
-> accurate than both standard and cost-penalised gradient ADAPT at every
-> intermediate noise level (H2 0.25x: 13.8 vs 15.3 mHa; LiH 0.25x/0.5x:
-> -0.5/-0.9 mHa) *at identical circuit cost*, by selecting the specific Pauli
-> string whose contribution survives decoherence rather than the one with the
-> largest bare gradient; noiselessly it reaches chemical accuracy with 26 CNOTs
-> where gradient ADAPT uses 36. The second rule makes the cost weight lambda a
-> feedback controller that rises as ADAPT enters the noise-dominated
-> diminishing-returns tail; the controller tracks the noise regime correctly
-> (lambda_final 0.4 at low noise, 2.5 at the device rate) but the minimal-basis
-> pools of H2 and LiH(2e,3o) do not contain the cheap-yet-useful operators it
-> would need to change a selection, so it reproduces the fixed-lambda result.
-> Cost of noise-realized selection is ~2-2.5x gradient ADAPT (four shortlist
-> re-optimisations per step). A larger active space with finite-shot sampling
-> is the needed next test.
+> We test two operator-selection rules for noisy ADAPT-VQE. The first,
+> *noise-realized selection*, replaces the energy gradient with the energy an
+> operator actually achieves when appended and re-optimised under the noise
+> channel, penalised by its CNOT cost. On H2 and stretched LiH(2e,3o)
+> (depolarising noise calibrated to FakeManilaV2) it is 0.5-1.4 mHa more accurate
+> than gradient ADAPT in a free-running sweep, but a matched operator-count
+> control shows the margin is inconsistent in sign once circuit length is fixed,
+> so it is largely a stopping-rule effect; noiselessly it reaches chemical
+> accuracy with 26 CNOTs where gradient ADAPT uses 36. The second rule makes the
+> cost weight lambda a feedback controller; it tracks the noise regime correctly
+> but never changes a selection, because the minimal-basis pools contain no
+> cheap-yet-useful operator to switch to. A 10-qubit LiH(2e,5o) fair test, run on
+> a CUDA density-matrix simulator that matches the CPU reference to 1e-14,
+> confirms the picture: circuit length dominates (no rule is within 13 mHa of FCI
+> at 0.05x device noise); noise-realized's 11 mHa free-running lead at 0.2x falls
+> to 0.8 mHa at a matched four operators; at six operators cost-aware rules win by
+> 5-10 mHa because they choose cheaper operators; and noise-realized is only
+> marginally, and not reliably, ahead of gradient selection. Cost of
+> noise-realized selection is ~2-2.5x gradient ADAPT. These are single
+> deterministic runs on one molecule with exact expectations and depolarising
+> noise only; finite-shot sampling and richer noise channels are the needed next
+> tests.

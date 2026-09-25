@@ -40,10 +40,14 @@ inconsistent in sign once every rule is forced to the same circuit length
 (delta versus standard +0.01 / +0.03 / -0.24 / +0.89 mHa at k = 6), so it is
 largely a circuit-length effect of the stopping rule rather than a better
 operator choice. A self-tuning cost-penalty controller tracks the noise regime
-correctly but never changes a selection on these systems. The conclusion is that
-minimal-basis H2 and LiH(2e,3o) are too small to establish or refute a
-selection-quality advantage; a 10-qubit active space that would settle it is
-identified.
+correctly but never changes a selection on these systems. A follow-up 10-qubit LiH(2e,5o)
+test on a GPU density-matrix simulator finds that circuit length dominates: no
+rule is within 13 mHa of FCI at 0.05x noise, the free-running 11 mHa lead of
+noise-realized at 0.2x falls to 0.8 mHa at a matched four operators, cost-aware
+rules win by 5 to 10 mHa at six operators, and noise-realized is only marginally
+and not reliably ahead of gradient selection. The larger space therefore does not
+rescue the proposals; finite-shot selection and richer noise channels remain the
+open tests.
 
 **Index Terms** — Variational quantum eigensolver, ADAPT-VQE, operator
 selection, quantum chemistry, NISQ, depolarizing noise, ansatz construction,
@@ -591,15 +595,25 @@ geometry, and one noise family (depolarizing) are tested. The one result that is
 solid is the pool-and-depth advantage of qubit-ADAPT over the fixed and routed
 baselines, which reproduces a known effect on a controlled footing.
 
-### F. What a fair test needs
+### F. The fair test (10 qubits, run afterwards)
 
-A conclusive test of both proposals is LiH(2e,5o), 10 qubits, at noise scales
-{0, 0.05, 0.1, 0.2}, at least 16 operators, with a finite-shot run (about 1e4
-shots) at the best noise level, and repeated across bond distances. That regime
-has a deep enough noisy ansatz for operator choice past step 5 to still matter,
-a pool with a real cost-versus-gradient spread among gradient-competitive
-operators, and mild enough noise that added operators still help. It is roughly
-30 to 50 times the compute of this study and was out of scope for the timeline.
+The test this section originally called for was run on a CUDA density-matrix
+simulator (gpu_backend.py) that reproduces the CPU density-matrix reference to
+1e-14 and evaluates a 10-qubit energy about 4000 times faster. Setup: LiH(2e,5o),
+stretched 3.0 A, noise scales {0, 0.05, 0.1, 0.2} of the FakeManilaV2 median gate
+errors, up to 16 operators free-running, plus matched operator counts of 4 and 6.
+Full tables are in docs/NOVEL_RESULTS.md. Findings: (i) circuit length dominates.
+No rule is within 13 mHa of FCI at 0.05x noise, and standard's error at 0.2x
+rises from 42 to 56 mHa when forced from 4 to 6 operators. (ii) Noise-realized's
+free-running lead over standard at 0.2x (41.5 versus 53.0 mHa) is mostly the
+plateau stop ending standard at 2 operators; at a matched four operators the gap
+is 0.8 mHa. (iii) At six operators cost-aware rules win by 5 to 10 mHa at 0.1x to
+0.2x because they choose cheaper circuits (54 versus 64 CNOTs), while
+noise-realized's sign is inconsistent (8 candidates: 6.5 mHa better at 0.1x, tied
+at 0.2x). (iv) The adaptive-lambda controller again reproduces fixed lambda
+exactly. Not tested: finite-shot sampling, non-depolarizing noise, and repeated
+bond distances. All runs are single deterministic runs, so differences of a few
+tenths of a mHa are not established.
 
 ### G. Conclusion
 
@@ -618,8 +632,9 @@ established as a better operator choice on these systems; its one robust effect
 is a leaner circuit at chemical accuracy in the noiseless limit. A self-tuning
 cost-penalty controller tracks the noise regime correctly but is not exercised
 by the test systems. All comparisons use a cross-framework noise footing
-verified equivalent to 1e-15 on a probe observable. A conclusive test of the
-selection rules needs the larger active space of Section V-F.
+verified equivalent to 1e-15 on a probe observable. The 10-qubit test of
+Section V-F does not change this conclusion: circuit length, not operator choice,
+dominates, and finite-shot and richer-noise tests remain open.
 
 ---
 
