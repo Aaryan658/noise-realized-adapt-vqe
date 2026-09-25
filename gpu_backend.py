@@ -33,6 +33,24 @@ CDTYPE = torch.complex128
 
 _PROBE = 0.123456789
 
+# Finite-shot configuration, module-level so the ADAPT loop needs no plumbing.
+#   shots = 0  -> exact expectations (default)
+#   shots = S  -> every Pauli term of H is estimated from S binomial shots,
+#                 independently (no commuting-group sharing), which is the
+#                 conservative "ungrouped" measurement model.
+CFG = {"shots": 0, "gen": None, "evals": 0}
+
+
+def set_shots(shots: int, seed: int = 0) -> None:
+    CFG["shots"] = int(shots)
+    CFG["evals"] = 0
+    CFG["gen"] = (torch.Generator(device=DEVICE).manual_seed(int(seed))
+                  if shots else None)
+
+
+def shots_active() -> bool:
+    return CFG["shots"] > 0
+
 
 @lru_cache(maxsize=None)
 def _template(word: str, wires: tuple):
@@ -97,10 +115,63 @@ class DensityMatrixSim:
         rho[idx, idx] = 1.0
         self.rho0 = rho.reshape([2] * (2 * n_qubits))
         self.hf_bits = [int(b) for b in hf_bits]
+        self._build_pauli_terms(hamiltonian)
         self.had = np.array([[1, 1], [1, -1]], dtype=complex) / np.sqrt(2)
         self._perm = {}
         self._eye = {k: torch.eye(2 ** k, dtype=CDTYPE, device=DEVICE)
                      .reshape([2] * (2 * k)) for k in (1, 2)}
+
+    def _build_pauli_terms(self, hamiltonian):
+        """
+        Tabulate H = const + sum_k c_k P_k for per-term expectation values.
+
+        For P|k> = i^{ny} (-1)^{pop(k&z)} |k^x>, Tr(P rho) =
+        sum_j i^{ny} (-1)^{pop((j^x)&z)} rho[j^x, j]  (real for Hermitian rho),
+        so all terms come from one gather on the density matrix.
+        """
+        n, N = self.n, 2 ** self.n
+        coeffs, ops = hamiltonian.terms()
+        j = np.arange(N)
+        idxs, signs, cs = [], [], []
+        self.const = 0.0
+        for c, op in zip(np.real(np.asarray(coeffs)), ops):
+            (pw, _), = qml.pauli.pauli_sentence(op).items()
+            if len(pw) == 0:
+                self.const += float(c)
+                continue
+            x = z = ny = 0
+            for w, s in pw.items():
+                bit = 1 << (n - 1 - int(w))
+                if s in ("X", "Y"):
+                    x |= bit
+                if s in ("Y", "Z"):
+                    z |= bit
+                ny += s == "Y"
+            k = j ^ x
+            par = np.array([bin(v & z).count("1") & 1 for v in k])
+            idxs.append(k)
+            signs.append((1j ** ny) * (1 - 2 * par))
+            cs.append(float(c))
+        self.n_terms = len(cs)
+        self._idx = torch.tensor(np.array(idxs), device=DEVICE)
+        self._sign = torch.tensor(np.array(signs), dtype=CDTYPE, device=DEVICE)
+        self._coef = torch.tensor(cs, dtype=torch.float64, device=DEVICE)
+        self._cols = torch.arange(N, device=DEVICE).expand(self.n_terms, N)
+
+    def term_expectations(self, r):
+        """Exact <P_k> for every non-identity Hamiltonian term; r is the N x N rho."""
+        return (self._sign * r[self._idx, self._cols]).sum(1).real
+
+    def _measured_energy(self, r):
+        """Finite-shot estimate: each term is a +/-1 binomial average over S shots."""
+        S = CFG["shots"]
+        t = self.term_expectations(r).clamp(-1.0, 1.0)
+        p = (1.0 + t) / 2.0
+        counts = torch.binomial(torch.full_like(p, float(S)), p,
+                                generator=CFG["gen"])
+        est = 2.0 * counts / S - 1.0
+        CFG["evals"] += 1
+        return float(self.const + (self._coef * est).sum())
 
     def _apply_1q_noisy(self, rho, u, q, p):
         """U rho U^dag on qubit q, then 1q depolarizing -- no permute copies."""
@@ -146,7 +217,7 @@ class DensityMatrixSim:
         add = torch.einsum(f"{keep},{e_ax}->{L}", tvec, self._eye[k])
         return (1.0 - p) * rho + (p / 2 ** k) * add
 
-    def energy(self, ops, params) -> float:
+    def energy(self, ops, params, exact: bool = False) -> float:
         rho = self.rho0
         # default.mixed decomposes BasisState into PauliX gates, and each one
         # is noised like any other 1q gate; depolarizing commutes with X, so
@@ -164,6 +235,8 @@ class DensityMatrixSim:
                          _rot_matrix(name, float(theta) if ang is None else ang))
                     rho = self._apply_1q_noisy(rho, u, ws[0], self.p1)
         r = rho.reshape(2 ** self.n, 2 ** self.n)
+        if CFG["shots"] and not exact:
+            return self._measured_energy(r)
         return float((self.Ht * r).sum().real)
 
 
@@ -178,15 +251,25 @@ def _sim(spec, p1, p2):
     return _SIMS[key]
 
 
-def make_gpu_qnode(spec, noise, selected, trailing=None):
-    """Callable qnode(params) -> energy, matching `_make_qnode`'s contract."""
+def make_gpu_qnode(spec, noise, selected, trailing=None, exact=False):
+    """
+    Callable qnode(params) -> energy, matching `_make_qnode`'s contract.
+    With shots configured (set_shots) it returns a finite-shot estimate unless
+    `exact=True`, which is used to score the final circuit.
+    """
     sim = _sim(spec, noise.p1, noise.p2)
     ops = [(o.pauli_word, tuple(o.wires))
            for o in list(selected) + ([trailing] if trailing is not None else [])]
 
     def qnode(params):
-        return sim.energy(ops, np.asarray(params, dtype=float).ravel())
+        return sim.energy(ops, np.asarray(params, dtype=float).ravel(),
+                          exact=exact)
     return qnode
+
+
+def n_terms(spec, noise) -> int:
+    """Non-identity Pauli terms in H (shots per energy evaluation = n_terms * S)."""
+    return _sim(spec, noise.p1, noise.p2).n_terms
 
 
 def selftest(spec=None, scales=(0.0, 0.25, 1.0), n_ops=4, seed=0) -> bool:
