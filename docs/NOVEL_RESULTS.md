@@ -297,18 +297,63 @@ error bars, so differences of a few tenths of a mHa are not established), exact
 expectations (no shot noise), depolarizing gate noise only (no readout, coherent,
 or amplitude-damping errors).
 
+### Finite-shot selection (10 qubits, K = 4, 0.1x noise)
+
+Literature review (2025-2026) flagged finite-shot operator selection as the
+largest open risk: distinguishing the top gradient needs ~1/||g||^2 shots and
+gradient troughs cause false convergence (arXiv:2512.25004); gradient-free
+energy-fit selection (GGA-VQE, Feniou et al. 2025) is more shot-noise
+resilient. This was tested with [`shots_experiment.py`](../shots_experiment.py).
+Every energy evaluation (optimizer steps, candidate scoring, gradients) is a
+finite-shot estimate: each of the 275 non-identity Pauli terms of H is a +/-1
+binomial average over S shots, independently (ungrouped, so absolute shot counts
+are pessimistic). Gradients use the exact two-term shift rule, valid here
+because each pool operator has a single theta-dependent RZ and the noise
+channels are theta-independent. The circuit each run builds is scored by its
+*exact* noisy energy, so the error reflects the choices made, not measurement
+noise in the answer. Standard vs noise-realized (4 candidates), 5 seeds per
+cell; exact-expectation reference: 23.90 (standard), 23.68 (NR) mHa. Data:
+`results/results_10q_shots.csv`.
+
+| shots/term | standard (mHa, mean +- SEM) | NR-4 (mHa, mean +- SEM) | paired NR - std | NR wins | total shots NR / std |
+|---|---|---|---|---|---|
+| 1e4 | 60.66 +- 4.38 | 33.58 +- 1.85 | -27.08 +- 3.97 | 5/5 | 4.6e9 / 3.5e9 |
+| 1e5 | 32.67 +- 1.64 | 28.54 +- 0.95 | -4.13 +- 1.03 | 5/5 | 4.6e10 / 3.5e10 |
+| 1e6 | 26.08 +- 0.94 | 24.66 +- 0.26 | -1.41 +- 1.03 | 4/5 | 4.7e11 / 3.6e11 |
+| 1e7 | 25.02 +- 0.37 | 24.19 +- 0.10 | -0.83 +- 0.31 | 4/5 | 4.7e12 / 3.6e12 |
+
+Findings:
+
+1. **Gradient selection is not shot-noise robust at low budgets.** At 1e4 shots
+   per term standard ADAPT is 2.5x worse than its exact-expectation result
+   (60.7 vs 23.9 mHa); it sometimes commits to deeper operators (40-60 CNOTs vs
+   44), while noise-realized built 44-CNOT circuits in every run.
+2. **Noise-realized is much more robust at low shots and converges to the same
+   accuracy at high shots.** Its lead is 27 mHa (5/5 seeds) at 1e4, 4 mHa (5/5)
+   at 1e5, and shrinks to 1.4 +- 1.0 mHa at 1e6 (about one standard error, not
+   distinguishable from zero) and 0.8 +- 0.3 mHa at 1e7.
+3. **The comparison is close to equal-shot.** Noise-realized used only ~1.3x the
+   total shots of standard, so the lead at 1e4 and 1e5 is not bought with a
+   larger budget: NR at 1e4 (4.6e9 shots, 33.6 mHa) matches standard at 1e5
+   (3.5e10 shots, 32.7 mHa), i.e. ~8x fewer shots for the same accuracy.
+4. **Gradient selection needs ~1e6 shots per term to come within ~2 mHa of its
+   exact-expectation accuracy** at this noise level (26.1 vs 23.9 mHa).
+
+Limits: one noise scale and one K; 5 seeds, so a 5/5 record only bounds the
+win rate below by 0.57 (Wilson 95%) and the 1e6-1e7 differences are within one
+to three standard errors; ungrouped measurement model; per-run operator
+sequences differ from the exact run even at 1e7 shots (30-35% positional
+agreement), consistent with many near-degenerate operators, so sequence
+agreement is not a meaningful metric here.
+
 ### Next experiments
 
-Literature review (2025-2026) points to finite-shot operator selection as the
-largest open risk: distinguishing the top gradient needs ~1/||g||^2 shots and
-gradient troughs cause false convergence (arXiv:2512.25004); noise, coherent and
-incoherent, can prevent selection from converging and is mitigated by
-dynamical decoupling + ZNE (arXiv:2609.17501); gradient-free energy-fit selection
-(GGA-VQE, Feniou et al. 2025) is more shot-noise resilient. Planned, in order:
+Remaining, in order (see the literature review; coherent and incoherent noise
+can also prevent selection from converging and is mitigated by dynamical
+decoupling + ZNE, arXiv:2609.17501):
 
-1. Finite-shot selection: per-term shot noise in the GPU simulator, sweep
-   1e3-1e6 shots, report selection accuracy and stall rate, and compare rules at
-   equal *total shots* (not equal iterations).
+1. (Done, above.) Finite-shot selection. Still to do: grouped-measurement shot
+   model, other noise scales and K, and more seeds.
 2. Realistic channels: amplitude damping, dephasing, coherent over-rotation,
    readout error; test TETRIS layering on the non-depolarizing channels.
 3. Mitigation on the selection step: ZNE by gate folding and readout mitigation.

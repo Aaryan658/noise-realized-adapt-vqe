@@ -46,8 +46,10 @@ rule is within 13 mHa of FCI at 0.05x noise, the free-running 11 mHa lead of
 noise-realized at 0.2x falls to 0.8 mHa at a matched four operators, cost-aware
 rules win by 5 to 10 mHa at six operators, and noise-realized is only marginally
 and not reliably ahead of gradient selection. The larger space therefore does not
-rescue the proposals; finite-shot selection and richer noise channels remain the
-open tests.
+rescue the proposals. A finite-shot test shows that gradient selection is not
+shot-noise robust (60.7 versus 33.6 mHa for noise-realized at 1e4 shots per
+Pauli term, converging by 1e6 to 1e7 shots); richer noise channels remain an
+open test.
 
 **Index Terms** — Variational quantum eigensolver, ADAPT-VQE, operator
 selection, quantum chemistry, NISQ, depolarizing noise, ansatz construction,
@@ -611,8 +613,15 @@ is 0.8 mHa. (iii) At six operators cost-aware rules win by 5 to 10 mHa at 0.1x t
 0.2x because they choose cheaper circuits (54 versus 64 CNOTs), while
 noise-realized's sign is inconsistent (8 candidates: 6.5 mHa better at 0.1x, tied
 at 0.2x). (iv) The adaptive-lambda controller again reproduces fixed lambda
-exactly. Not tested: finite-shot sampling, non-depolarizing noise, and repeated
-bond distances. All runs are single deterministic runs, so differences of a few
+exactly. (v) Finite-shot selection (fixed four operators, 0.1x, ungrouped
+per-Pauli-term sampling, exact shift-rule gradients, final circuits scored
+exactly, 5 seeds): at 1e4 shots per term standard reaches 60.7 +- 4.4 mHa against
+33.6 +- 1.9 for noise-realized (5 of 5 seeds), at 1e5 32.7 versus 28.5, at 1e6
+26.1 versus 24.7, and at 1e7 25.0 versus 24.2, against 23.9 and 23.7 with exact
+expectations; noise-realized used about 1.3 times the total shots. Gradient
+selection needs about 1e6 shots per term to approach its exact accuracy, and the
+gap above that is within one to three standard errors. Not tested:
+non-depolarizing noise and repeated bond distances. All runs are single deterministic runs, so differences of a few
 tenths of a mHa are not established.
 
 ### G. Conclusion
@@ -634,7 +643,8 @@ cost-penalty controller tracks the noise regime correctly but is not exercised
 by the test systems. All comparisons use a cross-framework noise footing
 verified equivalent to 1e-15 on a probe observable. The 10-qubit test of
 Section V-F does not change this conclusion: circuit length, not operator choice,
-dominates, and finite-shot and richer-noise tests remain open.
+dominates at exact expectations, while finite-shot sampling exposes a real
+weakness of gradient selection at low shot counts; richer-noise tests remain open.
 
 ---
 

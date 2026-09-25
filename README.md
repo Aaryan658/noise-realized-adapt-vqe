@@ -77,7 +77,13 @@ density-matrix simulator ([`gpu_backend.py`](gpu_backend.py), matches
   standard at 2 operators. At a matched 4 operators the gap is 0.8 mHa.
 - At a matched 6 operators the cost-aware rules win by 5–10 mHa at 0.1–0.2×
   (cheaper operators), and noise-realized's sign is inconsistent.
-- Single deterministic runs on one molecule with exact expectations and
+- **Finite shots change the picture.** With every energy a finite-shot estimate
+  (10 qubits, 4 operators, 0.1×, 5 seeds), gradient selection needs ~10<sup>6</sup>
+  shots per Pauli term to approach its exact accuracy: at 10<sup>4</sup> shots
+  standard reaches 60.7 mHa versus 33.6 for noise-realized (5/5 seeds, ~1.3× the
+  shots), and the gap shrinks to ~1 mHa by 10<sup>6</sup>–10<sup>7</sup> shots
+  (`shots_experiment.py`).
+- The exact-expectation runs are single deterministic runs on one molecule with
   depolarizing-only noise: differences of a few tenths of a mHa are not
   established. Full tables and caveats: [`docs/NOVEL_RESULTS.md`](docs/NOVEL_RESULTS.md).
 
@@ -94,6 +100,7 @@ run_experiments.py                sweep: strategies × molecules × noise → CS
 fixed_k_experiment.py             matched-operator-count control (fixed_k) for the selection rules
 gpu_backend.py                    CUDA density-matrix simulator (ADAPT_BACKEND=gpu), self-tests vs default.mixed
 fair_test_10q.py                  LiH(2e,5o) 10-qubit grid (free-running and --fixed-k), resumable
+shots_experiment.py               finite-shot selection sweep (1e4-1e7 shots/term, 5 seeds); --analyze for tables
 analyze_results.py                comparison tables + figures
 verify_fix.py                     pre-sweep checks: cost spread, selection divergence at λ=1, λ=0 ≡ standard
 
