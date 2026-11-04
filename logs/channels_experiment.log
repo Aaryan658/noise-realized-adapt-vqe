@@ -1,0 +1,53 @@
+================================================================================================
+RICHER NOISE  LiH(AS:2e,5o)  K=4  exact expectations  lambda/gamma=2.161  readout eps=0.0219 (x scale)
+models=['thermal', 'coherent', 'depol+readout', 'all'] scales=[0.05, 0.1, 0.2] done=0
+================================================================================================
+
+thermal  scale=0.05  p1=1.77e-05 p2=5.05e-04
+  standard  err=  12.968 mHa CNOT=44  184s
+  NR_c4     err=  12.919 mHa CNOT=44  359s
+
+thermal  scale=0.1  p1=3.54e-05 p2=1.01e-03
+  standard  err=  20.340 mHa CNOT=44  232s
+  NR_c4     err=  20.242 mHa CNOT=44  354s
+
+thermal  scale=0.2  p1=7.08e-05 p2=2.02e-03
+  standard  err=  34.860 mHa CNOT=44  238s
+  NR_c4     err=  34.670 mHa CNOT=44  356s
+
+coherent  scale=0.05  p1=1.77e-05 p2=5.05e-04
+  standard  err=  29.940 mHa CNOT=44  96s
+  NR_c4     err=  21.426 mHa CNOT=44  79s
+
+coherent  scale=0.1  p1=3.54e-05 p2=1.01e-03
+  standard  err=  38.950 mHa CNOT=44  28s
+  NR_c4     err=  37.099 mHa CNOT=44  43s
+
+coherent  scale=0.2  p1=7.08e-05 p2=2.02e-03
+  standard  err=  81.062 mHa CNOT=44  28s
+  NR_c4     err=  69.836 mHa CNOT=44  43s
+
+depol+readout  scale=0.05  p1=1.77e-05 p2=5.05e-04
+  standard  err=  18.771 mHa CNOT=44  49s
+  NR_c4     err=  18.423 mHa CNOT=44  73s
+
+depol+readout  scale=0.1  p1=3.54e-05 p2=1.01e-03
+  standard  err=  31.824 mHa CNOT=44  49s
+  NR_c4     err=  31.135 mHa CNOT=44  90s
+
+depol+readout  scale=0.2  p1=7.08e-05 p2=2.02e-03
+  standard  err=  56.464 mHa CNOT=44  88s
+  NR_c4     err=  56.303 mHa CNOT=44  208s
+
+all  scale=0.05  p1=1.77e-05 p2=5.05e-04
+  standard  err=  40.232 mHa CNOT=44  242s
+  NR_c4     err=  33.539 mHa CNOT=44  371s
+
+all  scale=0.1  p1=3.54e-05 p2=1.01e-03
+  standard  err=  68.343 mHa CNOT=44  243s
+  NR_c4     err=  64.201 mHa CNOT=44  361s
+
+all  scale=0.2  p1=7.08e-05 p2=2.02e-03
+  standard  err= 116.936 mHa CNOT=44  243s
+  NR_c4     err= 108.699 mHa CNOT=44  359s
+wrote -> results\results_10q_channels.csv

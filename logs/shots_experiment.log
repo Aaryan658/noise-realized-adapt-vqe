@@ -1,0 +1,29 @@
+================================================================================================
+FINITE-SHOT SELECTION  LiH(AS:2e,5o)  K=4  noise=0.1x  exact FCI=-7.79850425
+shots/term=[10000, 100000, 1000000, 10000000] seeds=[0, 1, 2, 3, 4] rules=['standard', 'NR_c4']  done=0
+================================================================================================
+S=   10000 seed=0 standard  err=  54.337 mHa CNOT=44  evals=1280   111s
+S=   10000 seed=0 NR_c4     err=  31.874 mHa CNOT=44  evals=1676   169s
+S=   10000 seed=1 standard  err=  46.682 mHa CNOT=44  evals=1282   46s
+S=   10000 seed=1 NR_c4     err=  31.266 mHa CNOT=44  evals=1651   59s
+S=   10000 seed=2 standard  err=  66.515 mHa CNOT=60  evals=1276   47s
+S=   10000 seed=2 NR_c4     err=  40.742 mHa CNOT=44  evals=1670   58s
+S=   10000 seed=3 standard  err=  70.169 mHa CNOT=40  evals=1279   43s
+S=   10000 seed=3 NR_c4     err=  33.419 mHa CNOT=44  evals=1647   59s
+S=   10000 seed=4 standard  err=  65.595 mHa CNOT=52  evals=1281   46s
+S=   10000 seed=4 NR_c4     err=  30.589 mHa CNOT=44  evals=1674   97s
+S=  100000 seed=0 standard  err=  35.285 mHa CNOT=44  evals=1287   45s
+S=  100000 seed=0 NR_c4     err=  28.217 mHa CNOT=44  evals=1686   83s
+S=  100000 seed=1 standard  err=  31.954 mHa CNOT=44  evals=1284   104s
+S=  100000 seed=1 NR_c4     err=  27.244 mHa CNOT=44  evals=1682   175s
+S=  100000 seed=2 standard  err=  34.483 mHa CNOT=44  evals=1294   116s
+S=  100000 seed=2 NR_c4     err=  30.769 mHa CNOT=44  evals=1677   144s
+S=  100000 seed=3 standard  err=  35.068 mHa CNOT=44  evals=1283   49s
+S=  100000 seed=3 NR_c4     err=  30.596 mHa CNOT=44  evals=1682   62s
+S=  100000 seed=4 standard  err=  26.543 mHa CNOT=44  evals=1289   46s
+S=  100000 seed=4 NR_c4     err=  25.862 mHa CNOT=44  evals=1688   168s
+S= 1000000 seed=0 standard  err=  25.431 mHa CNOT=44  evals=1291   80s
+S= 1000000 seed=0 NR_c4     err=  25.213 mHa CNOT=44  evals=1719   158s
+S= 1000000 seed=1 standard  err=  24.427 mHa CNOT=44  evals=1289   121s
+S= 1000000 seed=1 NR_c4     err=  23.944 mHa CNOT=44  evals=1691   185s
+S= 1000000 seed=2 standard  err=  29.426 mHa CNOT=44  evals=1294   87s

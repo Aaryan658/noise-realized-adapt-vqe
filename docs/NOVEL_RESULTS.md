@@ -37,7 +37,13 @@ still deliver, `lambda` relaxes. The `lambda` trajectory is logged
 
 ---
 
-## Result: noise-realized beats gradient selection at equal circuit cost
+## Free-running result (LiH(2e,3o)): noise-realized ahead at equal circuit cost
+
+> **Superseded in part.** This is the free-running result on the 6-qubit system.
+> The matched-operator-count control below shows the gap is largely a stopping-rule
+> (circuit-length) effect, and the 10-qubit fair test at the end finds a
+> marginal, not reliably signed, edge. Read it as the observation that motivated
+> those controls, not as an established advantage.
 
 **Energy error (mHa), PennyLane strategies:**
 
@@ -197,8 +203,9 @@ LiH(2e,3o) (stretched 3.0 A), `lam_init = 1`, `opt_maxiter = 100`,
    budget, the pure operator-choice contribution of noise-realized on
    LiH(2e,3o) is ~0 and not reliably signed. This does not refute the rule --
    it means **LiH(2e,3o) is too small to demonstrate it**, the same
-   conclusion the free-running data reached from the other direction. A
-   10-qubit active space (below) remains the test that could settle it.
+   conclusion the free-running data reached from the other direction. The
+   10-qubit test (below) was run to settle it; it finds the same marginal,
+   not reliably signed edge.
 
 5. **`adaptive_lambda` again reproduces fixed-`lambda` exactly** at every
    scale. `lambda_final` climbs to the 8.0 ceiling at 0.05x and 0.2x (six
@@ -211,38 +218,237 @@ LiH(2e,3o) (stretched 3.0 A), `lam_init = 1`, `opt_maxiter = 100`,
    the plateau stop is allowed to roll back the last non-improving picks).
    The fixed-k circuits are a control, not a recommended configuration.
 
-## A fair test
+## The fair test: LiH(2e,5o), 10 qubits (GPU)
 
-LiH(2e,5o), 10 qubits, noise scales `{0, 0.05, 0.1, 0.2}`, `max_operators = 16`,
-`n_candidates in {4, 8}`, with and without `adaptive_lambda`, plus a finite-shot
-run (e.g. 1e4 shots) at the best noise level. This is where a deep-enough
-ansatz + a cost-varied pool should let both novel rules show a larger, and
-statistically robust, separation from gradient ADAPT. Cost estimate ~150 s per
-candidate re-optimisation on 10 noisy qubits x 4 candidates x ~16 steps x cells
--> a few GPU-days-equivalent on CPU; out of scope for the course timeline but
-the natural next experiment.
+This was the experiment the previous sections left as future work. It was made
+tractable by a CUDA density-matrix simulator, [`gpu_backend.py`](../gpu_backend.py),
+enabled with `ADAPT_BACKEND=gpu`. It reproduces `default.mixed` to ~1e-14 (same
+PennyLane gate decomposition, same Qiskit-convention depolarizing channels, same
+noisy HF preparation) and evaluates a 10-qubit energy in ~0.02-0.04 s versus
+50-140 s on the CPU path (~4000x). Setup: LiH stretched to 3.0 A, (2e,5o),
+144-operator qubit-ADAPT pool, noise scales `{0, 0.05, 0.1, 0.2}` x FakeManilaV2
+median gate errors, `opt_maxiter = 200`, exact expectations (no shot noise).
+Driver: [`fair_test_10q.py`](../fair_test_10q.py); raw data in
+`results/results_10q*.csv`. All runs are deterministic (single run per cell).
+
+### Free-running (both stopping rules on, up to 16 operators)
+
+Energy error vs active-space FCI in mHa, (CNOT count):
+
+| noise | standard | resource-aware | noise-realized (4 cand.) | noise-realized (8 cand.) |
+|---|---|---|---|---|
+| 0 | 0.147 (128) | 0.138 (118) | 0.040 (130) | 0.042 (130) |
+| 0.05 | 13.50 (52) | 14.05 (58) | 13.13 (52) | 13.12 (52) |
+| 0.1 | 23.17 (48) | 24.74 (54) | 22.92 (48) | 22.87 (48) |
+| 0.2 | 52.98 (20) | 43.58 (36) | 41.57 (44) | 41.48 (44) |
+
+Adaptive lambda reproduced fixed lambda exactly (energy and operator sequence) in
+all 24 cells, the same structural null as on 6 qubits.
+
+### Matched operator count (`fixed_k`, both stopping rules off)
+
+K = 4 (the length noise-realized reached at 0.2x), error in mHa:
+
+| noise | standard | resource-aware | NR (4 cand.) | NR (8 cand.) |
+|---|---|---|---|---|
+| 0 | 5.52 | 24.55 | 5.52 | 5.52 |
+| 0.05 | 14.98 | 30.14 | 14.63 | 14.60 |
+| 0.1 | 23.90 | 35.71 | 23.68 | 23.61 |
+| 0.2 | 42.26 | 46.52 | 41.87 | 41.48 |
+
+K = 6, error in mHa (CNOT count):
+
+| noise | standard | resource-aware | NR (4 cand.) | NR (8 cand.) |
+|---|---|---|---|---|
+| 0 | 2.95 (52) | 3.67 (54) | 2.95 (52) | 2.95 (52) |
+| 0.05 | 13.50 (52) | 14.28 (54) | 13.13 (52) | 13.12 (52) |
+| 0.1 | 29.71 (64) | 24.74 (54) | 30.01 (64) | 23.21 (52) |
+| 0.2 | 55.98 (64) | 45.57 (54) | 55.59 (64) | 55.15 (64) |
+
+### Findings
+
+1. **The larger space does not rescue selection rules; circuit length dominates.**
+   Even at 0.05x device noise no rule gets within 13 mHa of FCI, and runs stop at
+   5-7 operators. Error grows steeply with noise scale and with operator count
+   (standard at 0.2x: 42.3 mHa with 4 operators, 56.0 with 6).
+2. **The free-running 11 mHa lead of noise-realized over standard at 0.2x is
+   mostly the stopping rule.** Standard's plateau stop ended it at 2 operators and
+   20 CNOTs. At matched K = 4 (44 CNOTs each) the gap is 0.8 mHa.
+3. **Noise-realized is consistently but marginally ahead at K = 4** (0.2-0.8 mHa at
+   every noisy scale), **and not reliably signed at K = 6** (NR-4 is +0.3 mHa worse
+   than standard at 0.1x; NR-8 is 6.5 mHa better at 0.1x with 52 vs 64 CNOTs, but
+   ties standard at 0.2x). Its edge depends on the candidate count and is not a
+   stable ordering.
+4. **Cost-aware selection helps only past the noise-optimal length.** At K = 6 and
+   0.1x-0.2x, resource-aware is 5-10 mHa better than standard because it selects
+   cheaper operators (54 vs 64 CNOTs). At K = 4 it is 4-25 mHa worse, since there
+   is no excess depth to remove.
+5. **Noiselessly** standard and noise-realized select the same operators at K = 4
+   and every rule reaches chemical accuracy in the free-running case.
+
+### What this does and does not support
+
+Supported (in this simulation): gradient selection with a plateau stop is
+competitive with the more expensive rule once circuit length is controlled, and
+the cost penalty pays off only when the ansatz would otherwise grow past the
+noise-optimal length. Not supported: that noise-realized selection is generally
+better. Limits: one molecule and geometry, one deterministic run per cell (no
+error bars, so differences of a few tenths of a mHa are not established), exact
+expectations (no shot noise), depolarizing gate noise only (no readout, coherent,
+or amplitude-damping errors).
+
+### Finite-shot selection (10 qubits, K = 4, 0.1x noise)
+
+Literature review (2025-2026) flagged finite-shot operator selection as the
+largest open risk: distinguishing the top gradient needs ~1/||g||^2 shots and
+gradient troughs cause false convergence (arXiv:2512.25004); gradient-free
+energy-fit selection (GGA-VQE, Feniou et al. 2025) is more shot-noise
+resilient. This was tested with [`shots_experiment.py`](../shots_experiment.py).
+Every energy evaluation (optimizer steps, candidate scoring, gradients) is a
+finite-shot estimate: each of the 275 non-identity Pauli terms of H is a +/-1
+binomial average over S shots, independently (ungrouped, so absolute shot counts
+are pessimistic). Gradients use the exact two-term shift rule, valid here
+because each pool operator has a single theta-dependent RZ and the noise
+channels are theta-independent. The circuit each run builds is scored by its
+*exact* noisy energy, so the error reflects the choices made, not measurement
+noise in the answer. Standard vs noise-realized (4 candidates), 5 seeds per
+cell; exact-expectation reference: 23.90 (standard), 23.68 (NR) mHa. Data:
+`results/results_10q_shots.csv`.
+
+| shots/term | standard (mHa, mean +- SEM) | NR-4 (mHa, mean +- SEM) | paired NR - std | NR wins | total shots NR / std |
+|---|---|---|---|---|---|
+| 1e4 | 60.66 +- 4.38 | 33.58 +- 1.85 | -27.08 +- 3.97 | 5/5 | 4.6e9 / 3.5e9 |
+| 1e5 | 32.67 +- 1.64 | 28.54 +- 0.95 | -4.13 +- 1.03 | 5/5 | 4.6e10 / 3.5e10 |
+| 1e6 | 26.08 +- 0.94 | 24.66 +- 0.26 | -1.41 +- 1.03 | 4/5 | 4.7e11 / 3.6e11 |
+| 1e7 | 25.02 +- 0.37 | 24.19 +- 0.10 | -0.83 +- 0.31 | 4/5 | 4.7e12 / 3.6e12 |
+
+Findings:
+
+1. **Gradient selection is not shot-noise robust at low budgets.** At 1e4 shots
+   per term standard ADAPT is 2.5x worse than its exact-expectation result
+   (60.7 vs 23.9 mHa); it sometimes commits to deeper operators (40-60 CNOTs vs
+   44), while noise-realized built 44-CNOT circuits in every run.
+2. **Noise-realized is much more robust at low shots and converges to the same
+   accuracy at high shots.** Its lead is 27 mHa (5/5 seeds) at 1e4, 4 mHa (5/5)
+   at 1e5, and shrinks to 1.4 +- 1.0 mHa at 1e6 (about one standard error, not
+   distinguishable from zero) and 0.8 +- 0.3 mHa at 1e7.
+3. **The comparison is close to equal-shot.** Noise-realized used only ~1.3x the
+   total shots of standard, so the lead at 1e4 and 1e5 is not bought with a
+   larger budget: NR at 1e4 (4.6e9 shots, 33.6 mHa) matches standard at 1e5
+   (3.5e10 shots, 32.7 mHa), i.e. ~8x fewer shots for the same accuracy.
+4. **Gradient selection needs ~1e6 shots per term to come within ~2 mHa of its
+   exact-expectation accuracy** at this noise level (26.1 vs 23.9 mHa).
+
+Limits: one noise scale and one K; 5 seeds, so a 5/5 record only bounds the
+win rate below by 0.57 (Wilson 95%) and the 1e6-1e7 differences are within one
+to three standard errors; ungrouped measurement model; per-run operator
+sequences differ from the exact run even at 1e7 shots (30-35% positional
+agreement), consistent with many near-degenerate operators, so sequence
+agreement is not a meaningful metric here.
+
+### Richer noise channels (10 qubits, K = 4, exact expectations)
+
+The depolarizing model is the most benign common assumption, and the 2026
+literature reports that coherent and incoherent noise can derail operator
+selection (arXiv:2609.17501). [`gpu_backend.py`](../gpu_backend.py) therefore
+gained stackable channel components, each validated against PennyLane's own
+channels (<= 1e-11, all seven combinations tested): **thermal** (amplitude
+damping + dephasing after every gate on the qubits it touches; the
+dephasing-to-damping ratio, lambda/gamma = 2.16, comes from the FakeManilaV2
+median T1/T2; idle-qubit decay is not modelled), **coherent** (systematic
+over-rotation after every gate: about the gate's own axis for 1q gates, ZZ for
+CNOT; fixed sign, i.e. a worst case), and **readout** (symmetric assignment
+error, FakeManilaV2 median 2.19% at 1x, scaled with the noise level, damping a
+weight-w Pauli term by (1 - 2 eps)^w). Thermal and coherent are scaled so their
+average gate infidelity equals the depolarizing model's at every scale, so only
+the *structure* of the noise differs, not its strength. Driver:
+[`channels_experiment.py`](../channels_experiment.py); data
+`results/results_10q_channels.csv`. Standard vs noise-realized (4 candidates),
+exact expectations, 44 CNOTs in every run. Error vs FCI in mHa:
+
+| model | scale | standard | NR-4 | NR - std | std vs depol | NR vs depol |
+|---|---|---|---|---|---|---|
+| depolarizing | 0.05 | 14.98 | 14.63 | -0.35 | | |
+| depolarizing | 0.1 | 23.90 | 23.68 | -0.22 | | |
+| depolarizing | 0.2 | 42.26 | 41.87 | -0.38 | | |
+| thermal | 0.05 | 12.97 | 12.92 | -0.05 | -2.01 | -1.71 |
+| thermal | 0.1 | 20.34 | 20.24 | -0.10 | -3.56 | -3.44 |
+| thermal | 0.2 | 34.86 | 34.67 | -0.19 | -7.40 | -7.20 |
+| coherent | 0.05 | 29.94 | 21.43 | **-8.51** | +14.96 | +6.80 |
+| coherent | 0.1 | 38.95 | 37.10 | -1.85 | +15.05 | +13.42 |
+| coherent | 0.2 | 81.06 | 69.84 | **-11.23** | +38.80 | +27.96 |
+| depol + readout | 0.05 | 18.77 | 18.42 | -0.35 | +3.79 | +3.79 |
+| depol + readout | 0.1 | 31.82 | 31.14 | -0.69 | +7.92 | +7.45 |
+| depol + readout | 0.2 | 56.46 | 56.30 | -0.16 | +14.21 | +14.43 |
+| all combined | 0.05 | 40.23 | 33.54 | -6.69 | +25.25 | +18.91 |
+| all combined | 0.1 | 68.34 | 64.20 | -4.14 | +44.44 | +40.52 |
+| all combined | 0.2 | 116.94 | 108.70 | -8.24 | +74.68 | +66.83 |
+
+Findings:
+
+1. **Coherent errors are the most damaging structure at equal gate
+   infidelity**: 2x the depolarizing error (81 vs 42 mHa for standard at 0.2x),
+   consistent with coherent infidelity adding up faster than incoherent.
+2. **Operator selection matters under coherent noise.** Noise-realized beats
+   gradient selection by 8.5 and 11.2 mHa at 0.05x and 0.2x, against 0.2-0.4 mHa
+   under depolarizing noise. A plausible reading is that a systematic error
+   biases the noisy gradient while the realized-energy score measures what the
+   noise actually does; this was not isolated. The gap is only 1.9 mHa at 0.1x,
+   so it is not monotone in noise and, from single deterministic runs, not
+   established as a stable pattern.
+3. **Thermal noise is milder than depolarizing at equal infidelity** (2-7 mHa
+   lower), and selection barely matters there (0.05-0.19 mHa).
+4. **Readout error adds 4-14 mHa to both rules equally**: it damps every term
+   by a factor set only by Pauli weight, so it does not change which operator
+   wins.
+5. **All combined** is 2-2.5x worse than depolarizing; noise-realized is 4-8 mHa
+   ahead.
+
+Limits: single deterministic runs (one molecule, K = 4, no error bars); the
+coherent model uses a fixed-sign over-rotation on every gate, a worst case that
+randomized compiling or dynamical decoupling would partly remove; no
+error mitigation applied; thermal decay of idle qubits and readout asymmetry
+are not modelled.
+
+### Next experiments
+
+Remaining, in order (see the literature review; coherent and incoherent noise
+can also prevent selection from converging and is mitigated by dynamical
+decoupling + ZNE, arXiv:2609.17501):
+
+1. (Done, above.) Finite-shot selection. Still to do: grouped-measurement shot
+   model, other noise scales and K, and more seeds.
+2. (Done, above, with single runs.) Realistic channels. Still to do: repeats
+   over bond length and over-rotation sign for the coherent result; TETRIS
+   layering on the non-depolarizing channels.
+3. Mitigation on the selection step: ZNE by gate folding and readout mitigation.
+4. Statistics: bond-length sweep and other molecules, >= 5 repeats, paired
+   comparisons with Wilson intervals (arXiv:2503.16589 for repeat counts).
+5. Emulator (FakeBackend with routing and readout), then a small real-device run.
 
 ---
 
 ## Paragraph for the report
 
-> We introduce two operator-selection rules for noisy ADAPT-VQE. The first,
-> *noise-realized selection*, replaces the energy gradient -- a noise-blind and,
-> under noise, poorly estimated predictor of an operator's value -- with the
-> energy the operator *actually* achieves when appended and re-optimised in the
-> presence of the noise channel, penalised by its CNOT cost. On H2 and stretched
-> LiH (STO-3G, depolarising noise calibrated to FakeManilaV2) it is more
-> accurate than both standard and cost-penalised gradient ADAPT at every
-> intermediate noise level (H2 0.25x: 13.8 vs 15.3 mHa; LiH 0.25x/0.5x:
-> -0.5/-0.9 mHa) *at identical circuit cost*, by selecting the specific Pauli
-> string whose contribution survives decoherence rather than the one with the
-> largest bare gradient; noiselessly it reaches chemical accuracy with 26 CNOTs
-> where gradient ADAPT uses 36. The second rule makes the cost weight lambda a
-> feedback controller that rises as ADAPT enters the noise-dominated
-> diminishing-returns tail; the controller tracks the noise regime correctly
-> (lambda_final 0.4 at low noise, 2.5 at the device rate) but the minimal-basis
-> pools of H2 and LiH(2e,3o) do not contain the cheap-yet-useful operators it
-> would need to change a selection, so it reproduces the fixed-lambda result.
-> Cost of noise-realized selection is ~2-2.5x gradient ADAPT (four shortlist
-> re-optimisations per step). A larger active space with finite-shot sampling
-> is the needed next test.
+> We test two operator-selection rules for noisy ADAPT-VQE. The first,
+> *noise-realized selection*, replaces the energy gradient with the energy an
+> operator actually achieves when appended and re-optimised under the noise
+> channel, penalised by its CNOT cost. On H2 and stretched LiH(2e,3o)
+> (depolarising noise calibrated to FakeManilaV2) it is 0.5-1.4 mHa more accurate
+> than gradient ADAPT in a free-running sweep, but a matched operator-count
+> control shows the margin is inconsistent in sign once circuit length is fixed,
+> so it is largely a stopping-rule effect; noiselessly it reaches chemical
+> accuracy with 26 CNOTs where gradient ADAPT uses 36. The second rule makes the
+> cost weight lambda a feedback controller; it tracks the noise regime correctly
+> but never changes a selection, because the minimal-basis pools contain no
+> cheap-yet-useful operator to switch to. A 10-qubit LiH(2e,5o) fair test, run on
+> a CUDA density-matrix simulator that matches the CPU reference to 1e-14,
+> confirms the picture: circuit length dominates (no rule is within 13 mHa of FCI
+> at 0.05x device noise); noise-realized's 11 mHa free-running lead at 0.2x falls
+> to 0.8 mHa at a matched four operators; at six operators cost-aware rules win by
+> 5-10 mHa because they choose cheaper operators; and noise-realized is only
+> marginally, and not reliably, ahead of gradient selection. Cost of
+> noise-realized selection is ~2-2.5x gradient ADAPT. These are single
+> deterministic runs on one molecule with exact expectations and depolarising
+> noise only; finite-shot sampling and richer noise channels are the needed next
+> tests.

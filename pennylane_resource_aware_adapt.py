@@ -103,6 +103,7 @@ At theta=0 the selection derivative equals the ADAPT commutator gradient
 
 from __future__ import annotations
 
+import os
 import time
 import warnings
 from dataclasses import dataclass
@@ -324,13 +325,21 @@ def build_pool(spec: mol.MoleculeSpec) -> list[PoolOperator]:
 # ==========================================================================
 def _make_qnode(spec, noise: nz.NoiseSpec, selected: list[PoolOperator],
                 trailing: PoolOperator | None = None,
-                diff_method: str | None = None):
+                diff_method: str | None = None, exact: bool = False):
     """
     QNode for <H>, one parameter per selected operator plus an optional
     trailing candidate used for gradient screening.
 
     Order is decompose -> add_noise; see module docstring note 2.
     """
+    if (os.environ.get("ADAPT_BACKEND", "cpu").lower() == "gpu"
+            and diff_method is None
+            and not getattr(noise, "backend", None)):
+        # Forward-only CUDA density-matrix path; the loop needs no autodiff.
+        import gpu_backend
+        return gpu_backend.make_gpu_qnode(spec, noise, selected, trailing,
+                                          exact=exact)
+
     H, n_qubits, hf, _ = mol.pennylane_hamiltonian(spec)
     dev = qml.device("default.mixed", wires=n_qubits)
     ops = list(selected) + ([trailing] if trailing is not None else [])
@@ -403,6 +412,14 @@ def _optimize(qnode, x0, maxiter=DEFAULT_OPT_MAXITER):
         getattr(res, "nfev", 0))
 
 
+def _shots_active() -> bool:
+    """True when the GPU backend is on and finite-shot sampling is configured."""
+    if os.environ.get("ADAPT_BACKEND", "cpu").lower() != "gpu":
+        return False
+    import gpu_backend
+    return gpu_backend.shots_active()
+
+
 def _candidate_gradient(spec, noise, selected, params, cand,
                         method=DEFAULT_GRAD_METHOD) -> float:
     """
@@ -413,7 +430,18 @@ def _candidate_gradient(spec, noise, selected, params, cand,
       "parameter-shift" -- PennyLane's exact analytic rule
       "central"         -- central difference on theta_c only (default, ~7x faster)
     """
-    if method == "parameter-shift":
+    if _shots_active():
+        # A 1e-5 finite difference of two shot-noisy energies is pure noise.
+        # PauliRot(theta) has a single theta-dependent RZ, so the two-term
+        # shift rule is exact even with the (theta-independent) noise channels:
+        # dE/dtheta = [E(+pi/2) - E(-pi/2)] / 2, each measured with fresh shots.
+        qnode = _make_qnode(spec, noise, selected, trailing=cand)
+        base = list(params)
+        val = 0.5 * (float(qnode(pnp.array(np.array(base + [np.pi / 2]),
+                                           requires_grad=False)))
+                     - float(qnode(pnp.array(np.array(base + [-np.pi / 2]),
+                                             requires_grad=False))))
+    elif method == "parameter-shift":
         qnode = _make_qnode(spec, noise, selected, trailing=cand,
                             diff_method="parameter-shift")
         x = pnp.array(list(params) + [0.0], requires_grad=True)
@@ -613,6 +641,19 @@ def _adapt_loop(spec, noise, selection: str, lam: float = DEFAULT_LAMBDA,
     params = best["params"]
     chosen_labels = best["labels"]
     energy = best["energy"]
+    shot_info = {}
+    if _shots_active():
+        # `energy` above is a finite-shot estimate; score the circuit that was
+        # actually built by its exact (shot-free) noisy energy.
+        import gpu_backend
+        shot_info = {
+            "energy_measured": energy,
+            "shots_per_term": gpu_backend.CFG["shots"],
+            "n_terms": gpu_backend.n_terms(spec, noise),
+            "n_energy_evals": gpu_backend.CFG["evals"],
+        }
+        energy = float(_make_qnode(spec, noise, selected, exact=True)(
+            pnp.array(np.asarray(params, dtype=float), requires_grad=False)))
 
     res = (_resources(materialize(selected, params), n_qubits) if selected
            else {"depth": 0, "cnot_count": 0, "gate_count": 0})
@@ -647,6 +688,7 @@ def _adapt_loop(spec, noise, selection: str, lam: float = DEFAULT_LAMBDA,
         "lambda_final": (None if selection == "standard" else lam_cur),
         "runtime_s": round(time.time() - t0, 2),
         **res,
+        **shot_info,
     }
 
 

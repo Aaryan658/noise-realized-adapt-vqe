@@ -40,10 +40,16 @@ inconsistent in sign once every rule is forced to the same circuit length
 (delta versus standard +0.01 / +0.03 / -0.24 / +0.89 mHa at k = 6), so it is
 largely a circuit-length effect of the stopping rule rather than a better
 operator choice. A self-tuning cost-penalty controller tracks the noise regime
-correctly but never changes a selection on these systems. The conclusion is that
-minimal-basis H2 and LiH(2e,3o) are too small to establish or refute a
-selection-quality advantage; a 10-qubit active space that would settle it is
-identified.
+correctly but never changes a selection on these systems. A follow-up 10-qubit LiH(2e,5o)
+test on a GPU density-matrix simulator finds that circuit length dominates: no
+rule is within 13 mHa of FCI at 0.05x noise, the free-running 11 mHa lead of
+noise-realized at 0.2x falls to 0.8 mHa at a matched four operators, cost-aware
+rules win by 5 to 10 mHa at six operators, and noise-realized is only marginally
+and not reliably ahead of gradient selection. The larger space therefore does not
+rescue the proposals. A finite-shot test shows that gradient selection is not
+shot-noise robust (60.7 versus 33.6 mHa for noise-realized at 1e4 shots per
+Pauli term, converging by 1e6 to 1e7 shots); richer noise channels remain an
+open test.
 
 **Index Terms** — Variational quantum eigensolver, ADAPT-VQE, operator
 selection, quantum chemistry, NISQ, depolarizing noise, ansatz construction,
@@ -446,11 +452,11 @@ gate count rather than the circuit depth [10]. It is presented as the study's
 positive result and the control against which the selection rules are measured;
 it is not claimed as a novel algorithm.
 
-*Figure 1 (`results/energy_error_vs_noise.png`):* energy error vs noise scale,
-one panel per molecule, all strategies. *Figure 2
-(`results/circuit_depth.png`):* transpiled depth and CNOT count per strategy;
-UCCSD and Qiskit ADAPT are 100 to 270 CNOTs, the PennyLane qubit-ADAPT circuits
-6 to 36.
+*Figure 1 (`results/novel/energy_error_vs_noise.png`):* energy error vs noise
+scale, one panel per molecule, all strategies. *Figure 2
+(`results/novel/circuit_depth.png`):* transpiled depth and CNOT count per
+strategy; UCCSD and Qiskit ADAPT are 100 to 270 CNOTs, the PennyLane
+qubit-ADAPT circuits 6 to 36.
 
 ---
 
@@ -591,15 +597,39 @@ geometry, and one noise family (depolarizing) are tested. The one result that is
 solid is the pool-and-depth advantage of qubit-ADAPT over the fixed and routed
 baselines, which reproduces a known effect on a controlled footing.
 
-### F. What a fair test needs
+### F. The fair test (10 qubits, run afterwards)
 
-A conclusive test of both proposals is LiH(2e,5o), 10 qubits, at noise scales
-{0, 0.05, 0.1, 0.2}, at least 16 operators, with a finite-shot run (about 1e4
-shots) at the best noise level, and repeated across bond distances. That regime
-has a deep enough noisy ansatz for operator choice past step 5 to still matter,
-a pool with a real cost-versus-gradient spread among gradient-competitive
-operators, and mild enough noise that added operators still help. It is roughly
-30 to 50 times the compute of this study and was out of scope for the timeline.
+The test this section originally called for was run on a CUDA density-matrix
+simulator (gpu_backend.py) that reproduces the CPU density-matrix reference to
+1e-14 and evaluates a 10-qubit energy about 4000 times faster. Setup: LiH(2e,5o),
+stretched 3.0 A, noise scales {0, 0.05, 0.1, 0.2} of the FakeManilaV2 median gate
+errors, up to 16 operators free-running, plus matched operator counts of 4 and 6.
+Full tables are in docs/NOVEL_RESULTS.md. Findings: (i) circuit length dominates.
+No rule is within 13 mHa of FCI at 0.05x noise, and standard's error at 0.2x
+rises from 42 to 56 mHa when forced from 4 to 6 operators. (ii) Noise-realized's
+free-running lead over standard at 0.2x (41.5 versus 53.0 mHa) is mostly the
+plateau stop ending standard at 2 operators; at a matched four operators the gap
+is 0.8 mHa. (iii) At six operators cost-aware rules win by 5 to 10 mHa at 0.1x to
+0.2x because they choose cheaper circuits (54 versus 64 CNOTs), while
+noise-realized's sign is inconsistent (8 candidates: 6.5 mHa better at 0.1x, tied
+at 0.2x). (iv) The adaptive-lambda controller again reproduces fixed lambda
+exactly. (v) Finite-shot selection (fixed four operators, 0.1x, ungrouped
+per-Pauli-term sampling, exact shift-rule gradients, final circuits scored
+exactly, 5 seeds): at 1e4 shots per term standard reaches 60.7 +- 4.4 mHa against
+33.6 +- 1.9 for noise-realized (5 of 5 seeds), at 1e5 32.7 versus 28.5, at 1e6
+26.1 versus 24.7, and at 1e7 25.0 versus 24.2, against 23.9 and 23.7 with exact
+expectations; noise-realized used about 1.3 times the total shots. Gradient
+selection needs about 1e6 shots per term to approach its exact accuracy, and the
+gap above that is within one to three standard errors. (vi) Richer noise
+(fixed four operators, exact expectations, thermal, coherent and readout
+channels scaled to the depolarizing model's gate infidelity): coherent
+over-rotation doubles the error (81 versus 42 mHa for standard at 0.2x) and is
+the one setting where selection matters, with noise-realized ahead by 8.5 and
+11.2 mHa at 0.05x and 0.2x (1.9 mHa at 0.1x), against 0.2 to 0.4 mHa under
+depolarizing noise; thermal noise is milder than depolarizing (2 to 7 mHa
+lower) with no selection effect; readout error adds 4 to 14 mHa to both rules
+equally. Not tested: error mitigation and repeated bond distances. All runs are single deterministic runs, so differences of a few
+tenths of a mHa are not established.
 
 ### G. Conclusion
 
@@ -618,8 +648,10 @@ established as a better operator choice on these systems; its one robust effect
 is a leaner circuit at chemical accuracy in the noiseless limit. A self-tuning
 cost-penalty controller tracks the noise regime correctly but is not exercised
 by the test systems. All comparisons use a cross-framework noise footing
-verified equivalent to 1e-15 on a probe observable. A conclusive test of the
-selection rules needs the larger active space of Section V-F.
+verified equivalent to 1e-15 on a probe observable. The 10-qubit test of
+Section V-F does not change this conclusion: circuit length, not operator choice,
+dominates at exact expectations, while finite-shot sampling exposes a real
+weakness of gradient selection at low shot counts; richer-noise tests remain open.
 
 ---
 
@@ -695,9 +727,9 @@ Commun.*, vol. 9, art. 4812, 2018.
 [19] S. Wang et al., "Noise-induced barren plateaus in variational quantum
 algorithms," *Nat. Commun.*, vol. 12, art. 6961, 2021.
 
-[20] Y. S. Yordanov, C. H. W. Barnes, and D. R. M. Arvidsson-Shukur,
-"Quantifying the effect of gate errors on variational quantum eigensolvers for
-quantum chemistry," *npj Quantum Inf.*, vol. 10, art. 43, 2024.
+[20] K. Dalton et al., "Quantifying the effect of gate errors on variational
+quantum eigensolvers for quantum chemistry," *npj Quantum Inf.*, vol. 10, 2024,
+doi:10.1038/s41534-024-00808-x.
 
 [21] V. Bergholm et al., "PennyLane: Automatic differentiation of hybrid
 quantum-classical computations," arXiv:1811.04968, 2022.

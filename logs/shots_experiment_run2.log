@@ -1,0 +1,20 @@
+================================================================================================
+FINITE-SHOT SELECTION  LiH(AS:2e,5o)  K=4  noise=0.1x  exact FCI=-7.79850425
+shots/term=[10000, 100000, 1000000, 10000000] seeds=[0, 1, 2, 3, 4] rules=['standard', 'NR_c4']  done=25
+================================================================================================
+S= 1000000 seed=2 NR_c4     err=  24.424 mHa CNOT=44  evals=1696   155s
+S= 1000000 seed=3 standard  err=  26.722 mHa CNOT=44  evals=1288   114s
+S= 1000000 seed=3 NR_c4     err=  24.437 mHa CNOT=44  evals=1690   184s
+S= 1000000 seed=4 standard  err=  24.369 mHa CNOT=44  evals=1289   126s
+S= 1000000 seed=4 NR_c4     err=  25.290 mHa CNOT=44  evals=1693   160s
+S=10000000 seed=0 standard  err=  24.500 mHa CNOT=44  evals=1303   139s
+S=10000000 seed=0 NR_c4     err=  24.161 mHa CNOT=44  evals=1718   182s
+S=10000000 seed=1 standard  err=  23.985 mHa CNOT=44  evals=1284   118s
+S=10000000 seed=1 NR_c4     err=  24.020 mHa CNOT=44  evals=1712   190s
+S=10000000 seed=2 standard  err=  25.756 mHa CNOT=44  evals=1289   109s
+S=10000000 seed=2 NR_c4     err=  24.517 mHa CNOT=44  evals=1690   169s
+S=10000000 seed=3 standard  err=  25.919 mHa CNOT=44  evals=1288   139s
+S=10000000 seed=3 NR_c4     err=  24.252 mHa CNOT=44  evals=1693   178s
+S=10000000 seed=4 standard  err=  24.924 mHa CNOT=44  evals=1296   137s
+S=10000000 seed=4 NR_c4     err=  23.977 mHa CNOT=44  evals=1696   184s
+wrote -> results\results_10q_shots.csv

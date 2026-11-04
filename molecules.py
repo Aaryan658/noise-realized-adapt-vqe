@@ -110,6 +110,17 @@ LIH = MoleculeSpec(
     note="STRETCHED d=3.0A, frozen core + (2e,3o), 6 qubits, 16.3 mHa corr.",
 )
 
+# Future-work "fair test" system: same stretched geometry, (2e,5o) -> 10 qubits,
+# 87.67 mHa of correlation. Needs the GPU backend (ADAPT_BACKEND=gpu).
+LIH_10Q = MoleculeSpec(
+    name="LiH",
+    symbols=("Li", "H"),
+    geometry=((0.0, 0.0, 0.0), (0.0, 0.0, 3.0)),
+    active_electrons=2,
+    active_orbitals=5,
+    note="STRETCHED d=3.0A, frozen core + (2e,5o), 10 qubits, 87.67 mHa corr.",
+)
+
 LIH_FULL = MoleculeSpec(
     name="LiH",
     symbols=("Li", "H"),
