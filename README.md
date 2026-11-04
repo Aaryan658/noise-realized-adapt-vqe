@@ -83,9 +83,14 @@ density-matrix simulator ([`gpu_backend.py`](gpu_backend.py), matches
   standard reaches 60.7 mHa versus 33.6 for noise-realized (5/5 seeds, ~1.3× the
   shots), and the gap shrinks to ~1 mHa by 10<sup>6</sup>–10<sup>7</sup> shots
   (`shots_experiment.py`).
-- The exact-expectation runs are single deterministic runs on one molecule with
-  depolarizing-only noise: differences of a few tenths of a mHa are not
-  established. Full tables and caveats: [`docs/NOVEL_RESULTS.md`](docs/NOVEL_RESULTS.md).
+- **Noise structure matters.** At equal gate infidelity, coherent over-rotation
+  doubles the error (81 vs 42 mHa at 0.2×) and is the one setting where selection
+  helps: noise-realized beats gradient selection by 8.5 and 11.2 mHa at 0.05× and
+  0.2× (vs 0.2–0.4 mHa under depolarizing noise). Thermal noise is milder and
+  readout error hurts both rules equally (`channels_experiment.py`).
+- The exact-expectation runs are single deterministic runs on one molecule:
+  differences of a few tenths of a mHa are not established, and the coherent-noise
+  pattern is not monotone in noise scale. Full tables and caveats: [`docs/NOVEL_RESULTS.md`](docs/NOVEL_RESULTS.md).
 
 ---
 

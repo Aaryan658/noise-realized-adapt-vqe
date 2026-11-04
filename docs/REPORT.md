@@ -620,8 +620,15 @@ exactly, 5 seeds): at 1e4 shots per term standard reaches 60.7 +- 4.4 mHa agains
 26.1 versus 24.7, and at 1e7 25.0 versus 24.2, against 23.9 and 23.7 with exact
 expectations; noise-realized used about 1.3 times the total shots. Gradient
 selection needs about 1e6 shots per term to approach its exact accuracy, and the
-gap above that is within one to three standard errors. Not tested:
-non-depolarizing noise and repeated bond distances. All runs are single deterministic runs, so differences of a few
+gap above that is within one to three standard errors. (vi) Richer noise
+(fixed four operators, exact expectations, thermal, coherent and readout
+channels scaled to the depolarizing model's gate infidelity): coherent
+over-rotation doubles the error (81 versus 42 mHa for standard at 0.2x) and is
+the one setting where selection matters, with noise-realized ahead by 8.5 and
+11.2 mHa at 0.05x and 0.2x (1.9 mHa at 0.1x), against 0.2 to 0.4 mHa under
+depolarizing noise; thermal noise is milder than depolarizing (2 to 7 mHa
+lower) with no selection effect; readout error adds 4 to 14 mHa to both rules
+equally. Not tested: error mitigation and repeated bond distances. All runs are single deterministic runs, so differences of a few
 tenths of a mHa are not established.
 
 ### G. Conclusion

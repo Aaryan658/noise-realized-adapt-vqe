@@ -346,6 +346,70 @@ sequences differ from the exact run even at 1e7 shots (30-35% positional
 agreement), consistent with many near-degenerate operators, so sequence
 agreement is not a meaningful metric here.
 
+### Richer noise channels (10 qubits, K = 4, exact expectations)
+
+The depolarizing model is the most benign common assumption, and the 2026
+literature reports that coherent and incoherent noise can derail operator
+selection (arXiv:2609.17501). [`gpu_backend.py`](../gpu_backend.py) therefore
+gained stackable channel components, each validated against PennyLane's own
+channels (<= 1e-11, all seven combinations tested): **thermal** (amplitude
+damping + dephasing after every gate on the qubits it touches; the
+dephasing-to-damping ratio, lambda/gamma = 2.16, comes from the FakeManilaV2
+median T1/T2; idle-qubit decay is not modelled), **coherent** (systematic
+over-rotation after every gate: about the gate's own axis for 1q gates, ZZ for
+CNOT; fixed sign, i.e. a worst case), and **readout** (symmetric assignment
+error, FakeManilaV2 median 2.19% at 1x, scaled with the noise level, damping a
+weight-w Pauli term by (1 - 2 eps)^w). Thermal and coherent are scaled so their
+average gate infidelity equals the depolarizing model's at every scale, so only
+the *structure* of the noise differs, not its strength. Driver:
+[`channels_experiment.py`](../channels_experiment.py); data
+`results/results_10q_channels.csv`. Standard vs noise-realized (4 candidates),
+exact expectations, 44 CNOTs in every run. Error vs FCI in mHa:
+
+| model | scale | standard | NR-4 | NR - std | std vs depol | NR vs depol |
+|---|---|---|---|---|---|---|
+| depolarizing | 0.05 | 14.98 | 14.63 | -0.35 | | |
+| depolarizing | 0.1 | 23.90 | 23.68 | -0.22 | | |
+| depolarizing | 0.2 | 42.26 | 41.87 | -0.38 | | |
+| thermal | 0.05 | 12.97 | 12.92 | -0.05 | -2.01 | -1.71 |
+| thermal | 0.1 | 20.34 | 20.24 | -0.10 | -3.56 | -3.44 |
+| thermal | 0.2 | 34.86 | 34.67 | -0.19 | -7.40 | -7.20 |
+| coherent | 0.05 | 29.94 | 21.43 | **-8.51** | +14.96 | +6.80 |
+| coherent | 0.1 | 38.95 | 37.10 | -1.85 | +15.05 | +13.42 |
+| coherent | 0.2 | 81.06 | 69.84 | **-11.23** | +38.80 | +27.96 |
+| depol + readout | 0.05 | 18.77 | 18.42 | -0.35 | +3.79 | +3.79 |
+| depol + readout | 0.1 | 31.82 | 31.14 | -0.69 | +7.92 | +7.45 |
+| depol + readout | 0.2 | 56.46 | 56.30 | -0.16 | +14.21 | +14.43 |
+| all combined | 0.05 | 40.23 | 33.54 | -6.69 | +25.25 | +18.91 |
+| all combined | 0.1 | 68.34 | 64.20 | -4.14 | +44.44 | +40.52 |
+| all combined | 0.2 | 116.94 | 108.70 | -8.24 | +74.68 | +66.83 |
+
+Findings:
+
+1. **Coherent errors are the most damaging structure at equal gate
+   infidelity**: 2x the depolarizing error (81 vs 42 mHa for standard at 0.2x),
+   consistent with coherent infidelity adding up faster than incoherent.
+2. **Operator selection matters under coherent noise.** Noise-realized beats
+   gradient selection by 8.5 and 11.2 mHa at 0.05x and 0.2x, against 0.2-0.4 mHa
+   under depolarizing noise. A plausible reading is that a systematic error
+   biases the noisy gradient while the realized-energy score measures what the
+   noise actually does; this was not isolated. The gap is only 1.9 mHa at 0.1x,
+   so it is not monotone in noise and, from single deterministic runs, not
+   established as a stable pattern.
+3. **Thermal noise is milder than depolarizing at equal infidelity** (2-7 mHa
+   lower), and selection barely matters there (0.05-0.19 mHa).
+4. **Readout error adds 4-14 mHa to both rules equally**: it damps every term
+   by a factor set only by Pauli weight, so it does not change which operator
+   wins.
+5. **All combined** is 2-2.5x worse than depolarizing; noise-realized is 4-8 mHa
+   ahead.
+
+Limits: single deterministic runs (one molecule, K = 4, no error bars); the
+coherent model uses a fixed-sign over-rotation on every gate, a worst case that
+randomized compiling or dynamical decoupling would partly remove; no
+error mitigation applied; thermal decay of idle qubits and readout asymmetry
+are not modelled.
+
 ### Next experiments
 
 Remaining, in order (see the literature review; coherent and incoherent noise
@@ -354,8 +418,9 @@ decoupling + ZNE, arXiv:2609.17501):
 
 1. (Done, above.) Finite-shot selection. Still to do: grouped-measurement shot
    model, other noise scales and K, and more seeds.
-2. Realistic channels: amplitude damping, dephasing, coherent over-rotation,
-   readout error; test TETRIS layering on the non-depolarizing channels.
+2. (Done, above, with single runs.) Realistic channels. Still to do: repeats
+   over bond length and over-rotation sign for the coherent result; TETRIS
+   layering on the non-depolarizing channels.
 3. Mitigation on the selection step: ZNE by gate folding and readout mitigation.
 4. Statistics: bond-length sweep and other molecules, >= 5 repeats, paired
    comparisons with Wilson intervals (arXiv:2503.16589 for repeat counts).
