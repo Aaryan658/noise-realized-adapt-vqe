@@ -382,6 +382,8 @@ def build():
                 p2 = doc.add_paragraph()
                 style_paragraph(p2, after=8, align=WD_ALIGN_PARAGRAPH.CENTER)
                 set_font(p2.add_run(AFFIL), size=11, italic=True)
+            elif text.startswith("Before submission"):
+                p._element.getparent().remove(p._element)   # author to-do note
             elif text.startswith("TABLE "):
                 style_paragraph(p, before=8, after=3, align=WD_ALIGN_PARAGRAPH.CENTER,
                                 keep_next=True)
