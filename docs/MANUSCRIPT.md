@@ -235,7 +235,7 @@ The clear result of this study is comparative: the compact all-to-all qubit-ADAP
 
 [19] S. Wang et al., "Noise-induced barren plateaus in variational quantum algorithms," Nat. Commun., vol. 12, art. 6961, 2021.
 
-[20] Y. S. Yordanov, C. H. W. Barnes, and D. R. M. Arvidsson-Shukur, "Quantifying the effect of gate errors on variational quantum eigensolvers for quantum chemistry," npj Quantum Inf., vol. 10, art. 43, 2024.
+[20] K. Dalton et al., "Quantifying the effect of gate errors on variational quantum eigensolvers for quantum chemistry," npj Quantum Inf., vol. 10, 2024, doi:10.1038/s41534-024-00808-x.
 
 [21] V. Bergholm et al., "PennyLane: Automatic differentiation of hybrid quantum-classical computations," arXiv:1811.04968, 2022.
 
